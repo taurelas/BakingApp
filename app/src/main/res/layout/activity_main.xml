@@ -6,15 +6,10 @@
     android:layout_height="match_parent"
     tools:context="com.leadinsource.bakingapp.MainActivity">
 
-    <GridView xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/gridview"
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:columnWidth="90dp"
-        android:gravity="center"
-        android:horizontalSpacing="10dp"
-        android:numColumns="1"
-        android:stretchMode="columnWidth"
-        android:verticalSpacing="10dp"
-        tools:listitem="@layout/main_list_item" />
+        tools:listitem="@layout/main_list_item"
+        app:spanCount="1"/>
 </android.support.constraint.ConstraintLayout>
