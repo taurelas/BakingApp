@@ -1,14 +1,18 @@
 package com.leadinsource.bakingapp.net;
 
+import com.leadinsource.bakingapp.model.Recipe;
+
+import java.util.List;
+
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Url;
 
 /**
- * Created by Matt on 14/04/2018.
+ * Retrofit Service for downloading list of Recipes
  */
 
 public interface DownloadService {
     @GET
-    Call<RecipesResponse> downloadRecipes(@Url String url);
+    Call<List<Recipe>> downloadRecipes(@Url String url);
 }

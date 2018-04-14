@@ -7,7 +7,6 @@ import android.util.Log;
 
 import com.leadinsource.bakingapp.model.Recipe;
 import com.leadinsource.bakingapp.net.DownloadService;
-import com.leadinsource.bakingapp.net.RecipesResponse;
 
 import java.io.IOException;
 import java.util.List;
@@ -20,7 +19,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
- * Created by Matt on 14/04/2018.
+ * The app's data repository
  */
 
 public class Repository {
@@ -48,32 +47,33 @@ public class Repository {
 
 
     private void fetchRecipes() {
-        Call<RecipesResponse> call = getDownloadService().downloadRecipes(BASE_URL);
-        call.enqueue(new Callback<RecipesResponse>() {
+        Call<List<Recipe>> call = getDownloadService().downloadRecipes(BASE_URL);
+        call.enqueue(new Callback<List<Recipe>>() {
             @Override
-            public void onResponse(Call<RecipesResponse> call, Response<RecipesResponse> response) {
+            public void onResponse(@NonNull Call<List<Recipe>> call, @NonNull Response<List<Recipe>> response) {
                 if(!response.isSuccessful()) {
                     try {
+                        //noinspection ConstantConditions
                         Log.d("retrofit", response.errorBody().string());
-                    } catch (IOException e) {
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                     return;
                 }
 
-                RecipesResponse decodedResponse = response.body();
+                List<Recipe> decodedResponse = response.body();
                 if(decodedResponse==null) {
                     return;
                 }
                 if(recipes==null) {
                     recipes = new MutableLiveData<>();
                 }
-                recipes.postValue(decodedResponse.recipeList);
+                recipes.postValue(decodedResponse);
 
             }
 
             @Override
-            public void onFailure(@NonNull Call<RecipesResponse> call, @NonNull Throwable t) {
+            public void onFailure(@NonNull Call<List<Recipe>> call, @NonNull Throwable t) {
                 Log.d("retrofit", t.getMessage());
             }
         });
