@@ -54,7 +54,7 @@ public class Repository {
                 if(!response.isSuccessful()) {
                     try {
                         //noinspection ConstantConditions
-                        Log.d("retrofit2", response.errorBody().string());
+                        Log.d("retrofit2.", response.errorBody().string());
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -74,7 +74,7 @@ public class Repository {
 
             @Override
             public void onFailure(@NonNull Call<List<Recipe>> call, @NonNull Throwable t) {
-                Log.d("retrofit2", t.getMessage());
+                Log.d("retrofit2.0", t.getMessage());
             }
         });
     }
