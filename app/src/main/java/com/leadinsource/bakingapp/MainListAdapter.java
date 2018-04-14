@@ -8,6 +8,8 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
+import com.leadinsource.bakingapp.model.Recipe;
+
 import java.util.List;
 
 /**
@@ -17,13 +19,13 @@ import java.util.List;
 public class MainListAdapter extends RecyclerView.Adapter<MainListAdapter.ViewHolder>{
 
     private Callback callback;
-    List<String> data;
+    List<Recipe> data;
 
     interface Callback {
         void onClick(int position);
     }
 
-    MainListAdapter(Callback callback, List<String> data) {
+    MainListAdapter(Callback callback, List<Recipe> data) {
         this.callback = callback;
         this.data = data;
     }
@@ -39,7 +41,7 @@ public class MainListAdapter extends RecyclerView.Adapter<MainListAdapter.ViewHo
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.tvRecipeName.setText(data.get(position));
+        holder.tvRecipeName.setText(data.get(position).getName());
     }
 
     @Override
