@@ -8,7 +8,6 @@ import android.util.Log;
 import com.leadinsource.bakingapp.model.Recipe;
 import com.leadinsource.bakingapp.net.DownloadService;
 
-import java.io.IOException;
 import java.util.List;
 
 import okhttp3.OkHttpClient;
@@ -54,7 +53,7 @@ public class Repository {
                 if(!response.isSuccessful()) {
                     try {
                         //noinspection ConstantConditions
-                        Log.d("retrofit", response.errorBody().string());
+                        Log.d("retrofit2.", response.errorBody().string());
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -74,7 +73,7 @@ public class Repository {
 
             @Override
             public void onFailure(@NonNull Call<List<Recipe>> call, @NonNull Throwable t) {
-                Log.d("retrofit", t.getMessage());
+                Log.d("retrofit2.0", t.getMessage());
             }
         });
     }
