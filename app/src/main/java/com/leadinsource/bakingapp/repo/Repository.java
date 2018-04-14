@@ -3,7 +3,6 @@ package com.leadinsource.bakingapp.repo;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import com.leadinsource.bakingapp.model.Recipe;
 import com.leadinsource.bakingapp.net.DownloadService;
@@ -16,6 +15,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+import timber.log.Timber;
 
 /**
  * The app's data repository
@@ -53,7 +53,7 @@ public class Repository {
                 if(!response.isSuccessful()) {
                     try {
                         //noinspection ConstantConditions
-                        Log.d("retrofit2.", response.errorBody().string());
+                        Timber.d(response.errorBody().string());
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -73,7 +73,7 @@ public class Repository {
 
             @Override
             public void onFailure(@NonNull Call<List<Recipe>> call, @NonNull Throwable t) {
-                Log.d("retrofit2.0", t.getMessage());
+                Timber.d(t.getMessage());
             }
         });
     }
