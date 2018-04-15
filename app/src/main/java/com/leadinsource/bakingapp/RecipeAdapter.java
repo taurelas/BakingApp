@@ -8,25 +8,23 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.leadinsource.bakingapp.model.Recipe;
-import com.leadinsource.bakingapp.model.Steps;
+import com.leadinsource.bakingapp.model.Step;
 
 /**
- * Adapter for Steps in RecipeActivity
+ * Adapter for Step in RecipeActivity
  */
 
 public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder>{
 
     interface Callback {
-        void onClick(Steps step);
+        void onClick(Step step);
     }
 
     private Recipe data;
-    private boolean twoPane;
     private Callback callback;
 
-    RecipeAdapter(Callback callback, Recipe recipe, boolean twoPane) {
+    RecipeAdapter(Callback callback, Recipe recipe) {
         data = recipe;
-        this.twoPane = twoPane;
         this.callback = callback;
     }
 

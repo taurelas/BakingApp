@@ -10,7 +10,7 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
 import com.leadinsource.bakingapp.model.Recipe;
-import com.leadinsource.bakingapp.model.Steps;
+import com.leadinsource.bakingapp.model.Step;
 
 import java.util.List;
 
@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity implements MainListAdapter.C
 
         startActivity(intent);
 
-        for(Steps step : recipe.getSteps()) {
+        for(Step step : recipe.getSteps()) {
             Timber.d("Step %s %s", step.getId(), step.getShortDescription());
         }
 

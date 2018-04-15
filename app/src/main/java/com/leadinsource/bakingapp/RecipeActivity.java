@@ -1,24 +1,14 @@
 package com.leadinsource.bakingapp;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
 import android.widget.Toast;
 
 
-import com.leadinsource.bakingapp.dummy.DummyContent;
 import com.leadinsource.bakingapp.model.Recipe;
-import com.leadinsource.bakingapp.model.Steps;
-
-import java.util.List;
+import com.leadinsource.bakingapp.model.Step;
 
 import timber.log.Timber;
 
@@ -26,7 +16,7 @@ import timber.log.Timber;
  * An activity representing a list of steps . This activity
  * has different presentations for handset and tablet-size devices. On
  * handsets, the activity presents a list of items, which when touched,
- * lead to a {@link ItemDetailActivity} representing
+ * lead to a {@link StepActivity} representing
  * item details. On tablets, the activity presents the list of items and
  * item details side-by-side using two vertical panes.
  */
@@ -41,11 +31,8 @@ public class RecipeActivity extends AppCompatActivity implements RecipeAdapter.C
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_item_list);
+        setContentView(R.layout.activity_recipe);
         Timber.d("Starting RecipeActivity");
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        toolbar.setTitle(getTitle());
 
         if (findViewById(R.id.item_detail_container) != null) {
             // The detail container view will be present only in the
@@ -59,26 +46,28 @@ public class RecipeActivity extends AppCompatActivity implements RecipeAdapter.C
         Intent intent = getIntent();
         Recipe recipe = intent.getParcelableExtra(MainActivity.EXTRA_DATA);
 
+        setTitle(recipe.getName());
+
         RecyclerView recyclerView = findViewById(R.id.rv_steps_list);
         assert recyclerView != null;
-        recyclerView.setAdapter(new RecipeAdapter(this, recipe, mTwoPane));
+        recyclerView.setAdapter(new RecipeAdapter(this, recipe));
     }
 
     @Override
-    public void onClick(Steps step) {
+    public void onClick(Step step) {
         Toast.makeText(this, "Hit step "+ step.getDescription(), Toast.LENGTH_SHORT).show();
 
         if (mTwoPane) {
             Bundle arguments = new Bundle();
-            arguments.putString(ItemDetailFragment.ARG_ITEM_ID, step.getId());
-            ItemDetailFragment fragment = new ItemDetailFragment();
+            arguments.putParcelable(StepDetailFragment.EXTRA_STEP, step);
+            StepDetailFragment fragment = new StepDetailFragment();
             fragment.setArguments(arguments);
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.item_detail_container, fragment)
                     .commit();
         } else {
-            Intent intent = new Intent(this, ItemDetailActivity.class);
-            intent.putExtra(ItemDetailFragment.ARG_ITEM_ID, step.getId());
+            Intent intent = new Intent(this, StepActivity.class);
+            intent.putExtra(StepDetailFragment.EXTRA_STEP, step);
 
             startActivity(intent);
         }

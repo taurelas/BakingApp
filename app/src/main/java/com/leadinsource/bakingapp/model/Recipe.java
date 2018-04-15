@@ -18,7 +18,7 @@ public class Recipe implements Parcelable {
 
     private String image;
 
-    private Steps[] steps;
+    private Step[] steps;
 
     public Ingredients[] getIngredients ()
     {
@@ -70,12 +70,12 @@ public class Recipe implements Parcelable {
         this.image = image;
     }
 
-    public Steps[] getSteps ()
+    public Step[] getSteps ()
     {
         return steps;
     }
 
-    public void setSteps (Steps[] steps)
+    public void setSteps (Step[] steps)
     {
         this.steps = steps;
     }
@@ -110,7 +110,7 @@ public class Recipe implements Parcelable {
         this.servings = in.readString();
         this.name = in.readString();
         this.image = in.readString();
-        this.steps = in.createTypedArray(Steps.CREATOR);
+        this.steps = in.createTypedArray(Step.CREATOR);
     }
 
     public static final Parcelable.Creator<Recipe> CREATOR = new Parcelable.Creator<Recipe>() {

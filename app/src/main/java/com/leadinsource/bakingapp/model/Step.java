@@ -4,10 +4,10 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 /**
- * Model for Steps from JSON
+ * Model for Step from JSON
  */
 
-public class Steps implements Parcelable {
+public class Step implements Parcelable {
     private String id;
 
     private String shortDescription;
@@ -88,10 +88,10 @@ public class Steps implements Parcelable {
         dest.writeString(this.thumbnailURL);
     }
 
-    public Steps() {
+    public Step() {
     }
 
-    protected Steps(Parcel in) {
+    protected Step(Parcel in) {
         this.id = in.readString();
         this.shortDescription = in.readString();
         this.description = in.readString();
@@ -99,15 +99,15 @@ public class Steps implements Parcelable {
         this.thumbnailURL = in.readString();
     }
 
-    public static final Parcelable.Creator<Steps> CREATOR = new Parcelable.Creator<Steps>() {
+    public static final Parcelable.Creator<Step> CREATOR = new Parcelable.Creator<Step>() {
         @Override
-        public Steps createFromParcel(Parcel source) {
-            return new Steps(source);
+        public Step createFromParcel(Parcel source) {
+            return new Step(source);
         }
 
         @Override
-        public Steps[] newArray(int size) {
-            return new Steps[size];
+        public Step[] newArray(int size) {
+            return new Step[size];
         }
     };
 }
