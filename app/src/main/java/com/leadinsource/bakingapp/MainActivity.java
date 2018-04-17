@@ -2,14 +2,15 @@ package com.leadinsource.bakingapp;
 
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.widget.Toast;
 
 import com.leadinsource.bakingapp.model.Recipe;
+import com.leadinsource.bakingapp.model.Step;
 
 import java.util.List;
 
@@ -39,9 +40,24 @@ public class MainActivity extends AppCompatActivity implements MainListAdapter.C
         });
     }
 
+    public static final int data = 5;
+
+    public static final String EXTRA_DATA = "com.example.app.DATA";
+
+
     @Override
-    public void onClick(int position) {
-        Toast.makeText(MainActivity.this, "Clicked by interface " + position,
-                Toast.LENGTH_SHORT).show();
+    public void onClick(Recipe recipe) {
+
+        Intent intent = new Intent(this, RecipeActivity.class);
+        intent.putExtra(EXTRA_DATA, recipe);
+
+        startActivity(intent);
+
+        for(Step step : recipe.getSteps()) {
+            Timber.d("Step %s %s", step.getId(), step.getShortDescription());
+        }
+
+        /*Toast.makeText(MainActivity.this, "Clicked by interface " + recipe.getName(),
+                Toast.LENGTH_SHORT).show();*/
     }
 }

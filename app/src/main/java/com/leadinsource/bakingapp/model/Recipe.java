@@ -1,11 +1,13 @@
 package com.leadinsource.bakingapp.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 /**
- * Created by Matt on 14/04/2018.
+ * Represents a single Recipe received from JSON
  */
 
-public class Recipe
-{
+public class Recipe implements Parcelable {
     private Ingredients[] ingredients;
 
     private String id;
@@ -16,7 +18,7 @@ public class Recipe
 
     private String image;
 
-    private Steps[] steps;
+    private Step[] steps;
 
     public Ingredients[] getIngredients ()
     {
@@ -68,12 +70,12 @@ public class Recipe
         this.image = image;
     }
 
-    public Steps[] getSteps ()
+    public Step[] getSteps ()
     {
         return steps;
     }
 
-    public void setSteps (Steps[] steps)
+    public void setSteps (Step[] steps)
     {
         this.steps = steps;
     }
@@ -83,4 +85,43 @@ public class Recipe
     {
         return "ClassPojo [ingredients = "+ingredients+", id = "+id+", servings = "+servings+", name = "+name+", image = "+image+", steps = "+steps+"]";
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeTypedArray(this.ingredients, flags);
+        dest.writeString(this.id);
+        dest.writeString(this.servings);
+        dest.writeString(this.name);
+        dest.writeString(this.image);
+        dest.writeTypedArray(this.steps, flags);
+    }
+
+    public Recipe() {
+    }
+
+    protected Recipe(Parcel in) {
+        this.ingredients = in.createTypedArray(Ingredients.CREATOR);
+        this.id = in.readString();
+        this.servings = in.readString();
+        this.name = in.readString();
+        this.image = in.readString();
+        this.steps = in.createTypedArray(Step.CREATOR);
+    }
+
+    public static final Parcelable.Creator<Recipe> CREATOR = new Parcelable.Creator<Recipe>() {
+        @Override
+        public Recipe createFromParcel(Parcel source) {
+            return new Recipe(source);
+        }
+
+        @Override
+        public Recipe[] newArray(int size) {
+            return new Recipe[size];
+        }
+    };
 }
