@@ -2,7 +2,6 @@ package com.leadinsource.bakingapp;
 
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.constraint.Guideline;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -66,14 +65,16 @@ public class StepDetailFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.activity_step, container, false);
+        View rootView = inflater.inflate(R.layout.step, container, false);
 
         // Show the dummy content as text in a TextView.
         if (step != null) {
 
             TextView textView = rootView.findViewById(R.id.step_description);
 
-            textView.setText(step.getDescription());
+            if(textView!=null) {
+                textView.setText(step.getDescription());
+            }
 
             SimpleExoPlayerView playerView = rootView.findViewById(R.id.playerView);
 
