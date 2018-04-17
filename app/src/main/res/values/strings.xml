@@ -3,4 +3,7 @@
     <string name="baking_image">Baking image</string>
     <string name="title_item_list">Items</string>
     <string name="title_item_detail">Item Detail</string>
+    <string name="rewind">Rewind</string>
+    <string name="pause">Pause</string>
+    <string name="play">Play</string>
 </resources>
