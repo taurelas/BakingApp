@@ -24,6 +24,8 @@ import com.leadinsource.bakingapp.model.Step;
 
 import timber.log.Timber;
 
+import static com.leadinsource.bakingapp.MainActivity.EXTRA_STEP;
+
 /**
  * A fragment representing a single Item detail screen.
  * This fragment is either contained in a {@link RecipeActivity}
@@ -35,7 +37,6 @@ public class StepDetailFragment extends Fragment {
      * The fragment argument representing the item ID that this fragment
      * represents.
      */
-    public static final String EXTRA_STEP = "step";
 
     /**
      * The dummy content this fragment is presenting.
@@ -59,6 +60,7 @@ public class StepDetailFragment extends Fragment {
             // arguments. In a real-world scenario, use a Loader
             // to load content from a content provider.
             step = getArguments().getParcelable(EXTRA_STEP);
+            Timber.d("Creating Fragment for %s", step.getShortDescription());
         }
     }
 
@@ -93,6 +95,8 @@ public class StepDetailFragment extends Fragment {
                 playerView.setVisibility(View.GONE);
                 Timber.d("Setting visibility to gone");
             }
+        } else {
+            Timber.d("Step is null");
         }
 
         return rootView;

@@ -44,7 +44,7 @@ public class RecipeActivity extends AppCompatActivity implements RecipeAdapter.C
         }
 
         Intent intent = getIntent();
-        Recipe recipe = intent.getParcelableExtra(MainActivity.EXTRA_DATA);
+        Recipe recipe = intent.getParcelableExtra("extra_data");
 
         setTitle(recipe.getName());
 
@@ -59,7 +59,7 @@ public class RecipeActivity extends AppCompatActivity implements RecipeAdapter.C
 
         if (mTwoPane) {
             Bundle arguments = new Bundle();
-            arguments.putParcelable(StepDetailFragment.EXTRA_STEP, step);
+            arguments.putParcelable(MainActivity.EXTRA_STEP, step);
             StepDetailFragment fragment = new StepDetailFragment();
             fragment.setArguments(arguments);
             getSupportFragmentManager().beginTransaction()
@@ -67,7 +67,7 @@ public class RecipeActivity extends AppCompatActivity implements RecipeAdapter.C
                     .commit();
         } else {
             Intent intent = new Intent(this, StepActivity.class);
-            intent.putExtra(StepDetailFragment.EXTRA_STEP, step);
+            intent.putExtra(MainActivity.EXTRA_STEP, step);
 
             startActivity(intent);
         }
