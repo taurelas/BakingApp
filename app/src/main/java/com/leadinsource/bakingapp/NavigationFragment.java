@@ -11,6 +11,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
+import com.leadinsource.bakingapp.ui.recipe.RecipeActivityViewModel;
+
 import timber.log.Timber;
 
 /**
@@ -19,7 +21,7 @@ import timber.log.Timber;
 
 public class NavigationFragment extends Fragment {
 
-    MainActivityViewModel viewModel;
+    RecipeActivityViewModel viewModel;
     private Button previousButton;
     private Button nextButton;
 
@@ -31,7 +33,7 @@ public class NavigationFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        viewModel = ViewModelProviders.of(getActivity()).get(MainActivityViewModel.class);
+        viewModel = ViewModelProviders.of(getActivity()).get(RecipeActivityViewModel.class);
     }
 
     @Nullable

@@ -1,4 +1,4 @@
-package com.leadinsource.bakingapp;
+package com.leadinsource.bakingapp.ui.recipe;
 
 import android.net.Uri;
 import android.os.Bundle;
@@ -20,17 +20,16 @@ import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
+import com.leadinsource.bakingapp.R;
 import com.leadinsource.bakingapp.model.Step;
 
 import timber.log.Timber;
 
-import static com.leadinsource.bakingapp.MainActivity.EXTRA_STEP;
+import static com.leadinsource.bakingapp.ui.main.MainActivity.EXTRA_STEP;
 
 /**
- * A fragment representing a single Item detail screen.
- * This fragment is either contained in a {@link RecipeActivity}
- * in two-pane mode (on tablets) or a {@link StepActivity}
- * on handsets.
+ * A fragment representing a single Step detail screen.
+
  */
 public class StepDetailFragment extends Fragment {
     /**

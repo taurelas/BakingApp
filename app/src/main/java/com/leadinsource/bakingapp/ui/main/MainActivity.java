@@ -1,23 +1,30 @@
-package com.leadinsource.bakingapp;
+package com.leadinsource.bakingapp.ui.main;
 
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
 
+import com.leadinsource.bakingapp.NavigationFragment;
+import com.leadinsource.bakingapp.R;
+import com.leadinsource.bakingapp.ui.recipe.RecipeActivity;
 import com.leadinsource.bakingapp.model.Recipe;
-import com.leadinsource.bakingapp.model.Step;
+
+import java.util.List;
 
 import timber.log.Timber;
 
-public class MainActivity extends AppCompatActivity  {
+public class MainActivity extends AppCompatActivity implements MainListAdapter.Callback {
 
     public static final String EXTRA_RECIPE = "extra_recipe";
     public static final String EXTRA_STEP = "extra_step";
     private NavigationFragment navigationFragment;
+    private RecyclerView recyclerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,13 +33,30 @@ public class MainActivity extends AppCompatActivity  {
         Timber.d("App start");
         MainActivityViewModel viewModel = ViewModelProviders.of(this).get(MainActivityViewModel.class);
 
-        RecipeListFragment recipeListFragment = new RecipeListFragment();
+        recyclerView = findViewById(R.id.recyclerView);
+        recyclerView.setHasFixedSize(true);
 
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.container, recipeListFragment)
-                .commit();
+        // ItemDecoration code as per https://stackoverflow.com/a/29168276/3886459
 
-        viewModel.getRecipeToDisplay().observe(this, new Observer<Recipe>() {
+        recyclerView.addItemDecoration(new ItemDecorationAlbumColumns(
+                16, getResources().getInteger(R.integer.main_list_columns)
+        ));
+        RecyclerView.LayoutManager lm = new GridLayoutManager(this, getResources().getInteger(R.integer.main_list_columns));
+        recyclerView.setLayoutManager(lm);
+
+        viewModel.getRecipeNames().observe(this, new Observer<List<Recipe>>() {
+            @Override
+            public void onChanged(@Nullable List<Recipe> recipeNames) {
+                recyclerView.setAdapter(new MainListAdapter(MainActivity.this, recipeNames));
+            }
+        });
+
+
+/*
+
+
+
+        /*viewModel.getRecipeToDisplay().observe(this, new Observer<Recipe>() {
             @Override
             public void onChanged(@Nullable Recipe recipe) {
                 if(recipe!=null) {
@@ -64,10 +88,20 @@ public class MainActivity extends AppCompatActivity  {
                     //we only want 1 step in the back stack
                     getSupportFragmentManager().popBackStackImmediate("Step", FragmentManager.POP_BACK_STACK_INCLUSIVE);
 
-                    getSupportFragmentManager().beginTransaction()
-                            .replace(R.id.container, stepDetailFragment)
-                            .addToBackStack("Step")
-                            .commit();
+
+                    View view = findViewById(R.id.item_detail_container);
+                    if(view!=null) {
+                        getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.item_detail_container, stepDetailFragment)
+                                .addToBackStack("Step")
+                                .commit();
+                    } else {
+                        getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.container, stepDetailFragment)
+                                .addToBackStack("Step")
+                                .commit();
+                    }
+
                     navigationFragment = new NavigationFragment();
                     getSupportFragmentManager().beginTransaction()
                             .replace(R.id.bottom_navigation, navigationFragment, "NAV")
@@ -75,7 +109,7 @@ public class MainActivity extends AppCompatActivity  {
                 }
             }
         });
-
+*/
 
 
 
@@ -94,7 +128,12 @@ public class MainActivity extends AppCompatActivity  {
         } else {
             Timber.d("Fragment is null");
         }
+    }
 
-
+    @Override
+    public void onClick(Recipe recipe) {
+        Intent intent = new Intent(this, RecipeActivity.class);
+        intent.putExtra(EXTRA_RECIPE, recipe);
+        startActivity(intent);
     }
 }
