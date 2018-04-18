@@ -14,7 +14,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity"
+        <activity android:name=".ui.main.MainActivity"
             android:launchMode="singleTop"
 
             >
@@ -25,19 +25,14 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".RecipeActivity"
-            android:parentActivityName=".MainActivity"
+            android:name=".ui.recipe.RecipeActivity"
+            android:label="Recipe"
             android:launchMode="singleTop"
-            android:label="@string/title_item_list"
-            android:theme="@style/AppTheme"></activity>
-        <activity
-            android:name=".StepActivity"
-            android:label="@string/title_item_detail"
-            android:parentActivityName=".RecipeActivity"
+            android:parentActivityName=".ui.main.MainActivity"
             android:theme="@style/AppTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.leadinsource.bakingapp.RecipeActivity" />
+                android:value="com.leadinsource.bakingapp.ui.main.MainActivity" />
         </activity>
     </application>
 

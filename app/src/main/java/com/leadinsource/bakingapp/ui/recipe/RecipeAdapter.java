@@ -1,4 +1,4 @@
-package com.leadinsource.bakingapp;
+package com.leadinsource.bakingapp.ui.recipe;
 
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.leadinsource.bakingapp.R;
 import com.leadinsource.bakingapp.model.Recipe;
 import com.leadinsource.bakingapp.model.Step;
 

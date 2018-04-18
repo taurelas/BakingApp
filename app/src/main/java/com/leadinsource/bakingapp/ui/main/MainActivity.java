@@ -1,4 +1,4 @@
-package com.leadinsource.bakingapp;
+package com.leadinsource.bakingapp.ui.main;
 
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
@@ -9,15 +9,21 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
+import com.leadinsource.bakingapp.R;
 import com.leadinsource.bakingapp.model.Recipe;
-import com.leadinsource.bakingapp.model.Step;
+import com.leadinsource.bakingapp.ui.recipe.RecipeActivity;
 
 import java.util.List;
 
 import timber.log.Timber;
 
+/**
+ * Displays list of recipes obtained from a remote json
+ */
 public class MainActivity extends AppCompatActivity implements MainListAdapter.Callback {
 
+    public static final String EXTRA_RECIPE = "extra_recipe";
+    public static final String EXTRA_STEP = "extra_step";
     private RecyclerView recyclerView;
 
     @Override
@@ -29,6 +35,12 @@ public class MainActivity extends AppCompatActivity implements MainListAdapter.C
 
         recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setHasFixedSize(true);
+
+        // ItemDecoration code as per https://stackoverflow.com/a/29168276/3886459
+
+        recyclerView.addItemDecoration(new ItemDecorationAlbumColumns(
+                getResources().getInteger(R.integer.grid_spacing), getResources().getInteger(R.integer.main_list_columns)
+        ));
         RecyclerView.LayoutManager lm = new GridLayoutManager(this, getResources().getInteger(R.integer.main_list_columns));
         recyclerView.setLayoutManager(lm);
 
@@ -38,26 +50,13 @@ public class MainActivity extends AppCompatActivity implements MainListAdapter.C
                 recyclerView.setAdapter(new MainListAdapter(MainActivity.this, recipeNames));
             }
         });
+
     }
-
-    public static final int data = 5;
-
-    public static final String EXTRA_DATA = "com.example.app.DATA";
-
 
     @Override
     public void onClick(Recipe recipe) {
-
         Intent intent = new Intent(this, RecipeActivity.class);
-        intent.putExtra(EXTRA_DATA, recipe);
-
+        intent.putExtra(EXTRA_RECIPE, recipe);
         startActivity(intent);
-
-        for(Step step : recipe.getSteps()) {
-            Timber.d("Step %s %s", step.getId(), step.getShortDescription());
-        }
-
-        /*Toast.makeText(MainActivity.this, "Clicked by interface " + recipe.getName(),
-                Toast.LENGTH_SHORT).show();*/
     }
 }
