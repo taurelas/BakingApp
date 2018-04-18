@@ -13,12 +13,11 @@ import java.util.List;
  */
 
 public class MainActivityViewModel extends ViewModel {
-    private Repository repo;
     private LiveData<List<Recipe>> recipes;
 
     public MainActivityViewModel() {
         // Getting instance of repository
-        repo = Repository.getInstance();
+        Repository repo = Repository.getInstance();
         recipes = repo.getRecipes();
     }
 

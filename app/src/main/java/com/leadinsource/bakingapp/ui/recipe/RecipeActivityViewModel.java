@@ -1,11 +1,9 @@
 package com.leadinsource.bakingapp.ui.recipe;
 
-import android.arch.core.util.Function;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MediatorLiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.Observer;
-import android.arch.lifecycle.Transformations;
 import android.arch.lifecycle.ViewModel;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -34,8 +32,6 @@ public class RecipeActivityViewModel extends ViewModel {
 
     // indices tracking for navigation
     private int currentStepIndex;
-    private int currentRecipeIndex;
-    private LiveData<Integer> lastRecipeIndex;
     private int lastStepIndex;
 
     public RecipeActivityViewModel() {
@@ -44,15 +40,6 @@ public class RecipeActivityViewModel extends ViewModel {
 
         // getting recipes from the repo
         recipes = repo.getRecipes();
-
-        // this is needed for navigation, to check if it's the last recipe
-
-        lastRecipeIndex = Transformations.map(recipes, new Function<List<Recipe>, Integer>() {
-            @Override
-            public Integer apply(List<Recipe> input) {
-                return input.size()-1;
-            }
-        }) ;
 
         //the following triggers onChange which sets the initial configuration for
         recipeToDisplay = new MutableLiveData<>();
@@ -63,18 +50,11 @@ public class RecipeActivityViewModel extends ViewModel {
         currentStep.setValue(null);
     }
 
-    LiveData<List<Recipe>> getRecipeNames() {
-
-        return recipes;
-    }
-
     public void setRecipeToDisplay(Recipe recipe) {
         recipeToDisplay.postValue(recipe);
         currentRecipe.setValue(recipe);
-        currentRecipeIndex = recipes.getValue().indexOf(recipe);
 
         setRecipeSteps(recipe.getSteps());
-
     }
 
     private void setRecipeSteps(Step[] steps) {
@@ -83,12 +63,6 @@ public class RecipeActivityViewModel extends ViewModel {
         }
         recipeSteps.setValue(Arrays.asList(steps));
         lastStepIndex = steps.length-1;
-    }
-
-
-    public LiveData<Recipe> getRecipeToDisplay() {
-
-        return recipeToDisplay;
     }
 
     public void setCurrentStep(Step step) {
@@ -142,14 +116,12 @@ public class RecipeActivityViewModel extends ViewModel {
                     } else {
                         isLastStep.setValue(false);
                     }
-
                 }
             });
 
         }
 
         return isLastStep;
-
     }
 
     public LiveData<Recipe> getCurrentRecipe() {
@@ -159,7 +131,4 @@ public class RecipeActivityViewModel extends ViewModel {
 
         return currentRecipe;
     }
-
-
-
 }

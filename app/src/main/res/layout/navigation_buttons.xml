@@ -2,6 +2,7 @@
 <android.support.constraint.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"    >
 
@@ -12,13 +13,14 @@
         android:layout_marginEnd="24dp"
         android:layout_marginTop="8dp"
         android:textColor="@android:color/white"
-        android:text="Next step"
+        android:text="@string/next_step"
         android:paddingStart="8dp"
         android:drawableEnd="@drawable/ic_navigate_next_white_24dp"
         android:background="@drawable/button_background"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="RtlSymmetry" />
 
     <Button
         android:id="@+id/btn_previous"
@@ -28,9 +30,10 @@
         android:layout_marginTop="8dp"
         android:textColor="@android:color/white"
         android:paddingEnd="8dp"
-        android:text="Previous step"
+        android:text="@string/previous_step"
         android:drawableStart="@drawable/ic_navigate_before_white_24dp"
         android:background="@drawable/button_background"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="RtlSymmetry" />
 </android.support.constraint.ConstraintLayout>
