@@ -40,7 +40,7 @@ public class RecipeActivity extends AppCompatActivity {
             recipe = intent.getParcelableExtra(MainActivity.EXTRA_RECIPE);
             viewModel.setRecipeToDisplay(recipe);
         }
-
+        setTitle(recipe.getName());
 
         View view = findViewById(R.id.step_detail_container);
 
