@@ -23,7 +23,7 @@ import timber.log.Timber;
 
 public class Repository {
     private static final String BASE_URL = "http://go.udacity.com/android-baking-app-json/";
-
+    private MutableLiveData<Boolean> idle;
     private static Repository instance;
     private MutableLiveData<List<Recipe>> recipes;
 
@@ -38,6 +38,7 @@ public class Repository {
     public LiveData<List<Recipe>> getRecipes() {
         if(recipes==null) {
             recipes = new MutableLiveData<>();
+            setIdle(false);
             fetchRecipes();
         }
 
@@ -68,7 +69,7 @@ public class Repository {
                     recipes = new MutableLiveData<>();
                 }
                 recipes.postValue(decodedResponse);
-
+                idle.setValue(true);
             }
 
             @Override
@@ -90,4 +91,19 @@ public class Repository {
         return retrofit.create(DownloadService.class);
     }
 
+    public LiveData<Boolean> getIdleness() {
+        if(idle==null) {
+            idle = new MutableLiveData<>();
+            idle.setValue(true);
+        }
+
+        return idle;
+    }
+
+    public void setIdle(boolean value) {
+        if(idle==null) {
+            idle = new MutableLiveData<>();
+        }
+        idle.setValue(value);
+    }
 }

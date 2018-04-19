@@ -14,10 +14,11 @@ import java.util.List;
 
 public class MainActivityViewModel extends ViewModel {
     private LiveData<List<Recipe>> recipes;
+    private final Repository repo;
 
     public MainActivityViewModel() {
         // Getting instance of repository
-        Repository repo = Repository.getInstance();
+        repo = Repository.getInstance();
         recipes = repo.getRecipes();
     }
 
@@ -26,4 +27,7 @@ public class MainActivityViewModel extends ViewModel {
         return recipes;
     }
 
+    LiveData<Boolean> getIdleness() {
+        return repo.getIdleness();
+    }
 }
