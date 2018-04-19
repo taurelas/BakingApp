@@ -37,8 +37,17 @@ public class RecipeActivity extends AppCompatActivity {
         Intent intent = getIntent();
 
         if(intent!=null) {
+            Timber.d("Intent not null");
             recipe = intent.getParcelableExtra(MainActivity.EXTRA_RECIPE);
-            viewModel.setRecipeToDisplay(recipe);
+            if(recipe!=null) {
+                Timber.d("Recipe is "+ recipe.getName());
+                viewModel.setRecipeToDisplay(recipe);
+                setTitle(recipe.getName());
+            } else {
+                Timber.d("Recipe is null");
+                Timber.d("Recipe is %s",intent.toString());
+            }
+
         }
 
 

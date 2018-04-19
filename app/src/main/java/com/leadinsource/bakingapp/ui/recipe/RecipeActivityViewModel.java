@@ -18,7 +18,9 @@ import java.util.List;
 import timber.log.Timber;
 
 /**
- * Created by Matt on 14/04/2018.
+ * View Model for Recipe Activity, handles in particular the navigation buttons by providing
+ * isFirst(), isLast() & moveToNext()
+ *
  */
 
 public class RecipeActivityViewModel extends ViewModel {
@@ -54,6 +56,7 @@ public class RecipeActivityViewModel extends ViewModel {
         recipeToDisplay.postValue(recipe);
         currentRecipe.setValue(recipe);
 
+
         setRecipeSteps(recipe.getSteps());
     }
 
@@ -87,20 +90,14 @@ public class RecipeActivityViewModel extends ViewModel {
     }
 
     public void moveToPrevious() {
-        if(isFirst()) {
-            // nothing for now
-        } else {
+        if (!isFirst()) {
             currentStepIndex--;
             currentStep.postValue(recipeSteps.getValue().get(currentStepIndex));
         }
     }
 
     public boolean isFirst() {
-        if(currentStepIndex==0) {
-            return true;
-        } else {
-            return false;
-        }
+        return currentStepIndex == 0;
     }
 
     @NonNull
