@@ -1,10 +1,16 @@
 package com.leadinsource.bakingapp;
 
+import android.content.Intent;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
 
+import com.leadinsource.bakingapp.model.Recipe;
+import com.leadinsource.bakingapp.model.Step;
 import com.leadinsource.bakingapp.ui.main.MainActivity;
+import com.leadinsource.bakingapp.ui.recipe.RecipeActivity;
+import com.leadinsource.bakingapp.ui.recipe.StepDetailFragment;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -13,7 +19,6 @@ import org.junit.runner.RunWith;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
-import static android.support.test.espresso.matcher.ViewMatchers.hasDescendant;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
@@ -26,44 +31,10 @@ import static android.support.test.espresso.matcher.ViewMatchers.withText;
 public class RecipeActivityRVTest {
 
     @Rule
-    public ActivityTestRule<MainActivity> activityTestRule = new ActivityTestRule<>(MainActivity.class);
+    public ActivityTestRule<RecipeActivity> activityTestRule = new ActivityTestRule<>(RecipeActivity.class, false, false);
 
-    @Test
-    public void clickRVItem_OpensRecipeActivity() {
-
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        onView(withId(R.id.recyclerView)).check(matches(hasDescendant(withText("Nutella Pie"))));
-
-
-        onView(withId(R.id.recyclerView))
-                .perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
-
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        onView(withId(R.id.rv_steps_list)).check(matches(hasDescendant(withText("Recipe Introduction"))));
-
-        onView(withId(R.id.rv_steps_list))
-                .perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
-
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        onView(withId(R.id.step_description)).check(matches(withText("Recipe Introduction")));
-
-
-        /*Recipe recipe = new Recipe();
+    public Intent setupIntent() {
+        Recipe recipe = new Recipe();
 
         recipe.setName("Nutella Pie");
 
@@ -90,19 +61,28 @@ public class RecipeActivityRVTest {
         recipe.setSteps(steps);
 
 
-        Intent intent = new Intent();
-        intent.putExtra("extra_recipe", recipe);
+       Intent intent = new Intent(InstrumentationRegistry.getInstrumentation().getTargetContext(), RecipeActivity.class);
+        intent.putExtra(MainActivity.EXTRA_RECIPE, recipe);
+
+        return intent;
+    }
+
+    @Test
+    public void clickRVItem_OpensRecipeActivity() {
+
+        Intent intent = setupIntent();
 
         activityTestRule.launchActivity(intent);
 
-        onData(anything()).inAdapterView(withId(R.id.rv_steps_list)).atPosition(0).perform(click());
+        StepDetailFragment fragment = new StepDetailFragment();
 
-        onView(withId(R.id.step_description)).check(matches(withText("Recipe introduction")));*/
+        //onView(withId(R.id.rv_steps_list)).check(matches(hasDescendant(withText("Recipe Introduction"))));
+
+        onView(withId(R.id.rv_steps_list))
+                .perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
+
+        onView(withId(R.id.step_description)).check(matches(withText("Recipe Introduction")));
+
     }
-/*
-    @Test
-    void Bogota() {
-
-    }*/
 
 }

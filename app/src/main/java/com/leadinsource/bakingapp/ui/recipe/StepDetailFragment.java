@@ -32,14 +32,7 @@ import static com.leadinsource.bakingapp.ui.main.MainActivity.EXTRA_STEP;
 
  */
 public class StepDetailFragment extends Fragment {
-    /**
-     * The fragment argument representing the item ID that this fragment
-     * represents.
-     */
 
-    /**
-     * The dummy content this fragment is presenting.
-     */
     private Step step;
     private SimpleExoPlayer exoPlayer;
 
@@ -79,7 +72,7 @@ public class StepDetailFragment extends Fragment {
 
             SimpleExoPlayerView playerView = rootView.findViewById(R.id.playerView);
 
-            if(step.getVideoURL().length()>0 && getContext()!=null) {
+            if(step.getVideoURL()!=null && step.getVideoURL().length()>0 && getContext()!=null) {
                 TrackSelector trackSelector = new DefaultTrackSelector();
                 LoadControl loadControl = new DefaultLoadControl();
                 exoPlayer = ExoPlayerFactory.newSimpleInstance(getContext(), trackSelector, loadControl);
