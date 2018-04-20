@@ -6,4 +6,10 @@
     <dimen name="item_width">200dp</dimen>
     <dimen name="text_margin">16dp</dimen>
     <integer name="grid_spacing">16</integer>
+
+    <!--
+Refer to App Widget Documentation for margin information
+http://developer.android.com/guide/topics/appwidgets/index.html#CreatingLayout
+    -->
+    <dimen name="widget_margin">8dp</dimen>
 </resources>
