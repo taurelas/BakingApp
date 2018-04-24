@@ -1,18 +1,30 @@
 package com.leadinsource.bakingapp.model;
 
+import android.arch.persistence.room.ColumnInfo;
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.PrimaryKey;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-/**
- * Model for Ingredienets received from JSON
- */
+import com.leadinsource.bakingapp.db.DataContract;
 
-public class Ingredients implements Parcelable {
+/**
+ * Model for Ingredients received from JSON
+ */
+@Entity(tableName = DataContract.Ingredient.TABLE_NAME)
+public class Ingredient implements Parcelable {
+
+    @PrimaryKey(autoGenerate = true)
+    public int uid;
+
     private String measure;
 
     private String ingredient;
 
     private String quantity;
+
+    @ColumnInfo(name = DataContract.Ingredient.RECIPE_ID)
+    public int recipeId;
 
     public String getMeasure ()
     {
@@ -62,24 +74,24 @@ public class Ingredients implements Parcelable {
         dest.writeString(this.quantity);
     }
 
-    public Ingredients() {
+    public Ingredient() {
     }
 
-    protected Ingredients(Parcel in) {
+    protected Ingredient(Parcel in) {
         this.measure = in.readString();
         this.ingredient = in.readString();
         this.quantity = in.readString();
     }
 
-    public static final Parcelable.Creator<Ingredients> CREATOR = new Parcelable.Creator<Ingredients>() {
+    public static final Parcelable.Creator<Ingredient> CREATOR = new Parcelable.Creator<Ingredient>() {
         @Override
-        public Ingredients createFromParcel(Parcel source) {
-            return new Ingredients(source);
+        public Ingredient createFromParcel(Parcel source) {
+            return new Ingredient(source);
         }
 
         @Override
-        public Ingredients[] newArray(int size) {
-            return new Ingredients[size];
+        public Ingredient[] newArray(int size) {
+            return new Ingredient[size];
         }
     };
 }

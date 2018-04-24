@@ -1,7 +1,8 @@
 package com.leadinsource.bakingapp.ui.main;
 
+import android.app.Application;
+import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
-import android.arch.lifecycle.ViewModel;
 
 import com.leadinsource.bakingapp.model.Recipe;
 import com.leadinsource.bakingapp.repo.Repository;
@@ -9,16 +10,17 @@ import com.leadinsource.bakingapp.repo.Repository;
 import java.util.List;
 
 /**
- * Created by Matt on 18/04/2018.
+ * ViewModel for MainActivity
  */
 
-public class MainActivityViewModel extends ViewModel {
+public class MainActivityViewModel extends AndroidViewModel {
     private LiveData<List<Recipe>> recipes;
     private final Repository repo;
 
-    public MainActivityViewModel() {
+    public MainActivityViewModel(Application application) {
+        super(application);
         // Getting instance of repository
-        repo = Repository.getInstance();
+        repo = Repository.getInstance(this.getApplication().getApplicationContext());
         recipes = repo.getRecipes();
     }
 

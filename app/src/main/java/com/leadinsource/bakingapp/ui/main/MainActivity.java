@@ -1,7 +1,9 @@
 package com.leadinsource.bakingapp.ui.main;
 
+import android.appwidget.AppWidgetManager;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -15,6 +17,7 @@ import android.support.v7.widget.RecyclerView;
 import com.leadinsource.bakingapp.R;
 import com.leadinsource.bakingapp.model.Recipe;
 import com.leadinsource.bakingapp.ui.idlingresource.SimpleIdlingResource;
+import com.leadinsource.bakingapp.ui.recipe.IngredientsWidget;
 import com.leadinsource.bakingapp.ui.recipe.RecipeActivity;
 
 import java.util.List;
@@ -54,6 +57,9 @@ public class MainActivity extends AppCompatActivity implements MainListAdapter.C
             @Override
             public void onChanged(@Nullable List<Recipe> recipeNames) {
                 recyclerView.setAdapter(new MainListAdapter(MainActivity.this, recipeNames));
+                AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(MainActivity.this);
+                int[] appWidgetIds = appWidgetManager.getAppWidgetIds(new ComponentName(MainActivity.this, IngredientsWidget.class));
+                appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetIds, R.id.list_view);
             }
         });
 
