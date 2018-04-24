@@ -1,14 +1,26 @@
 package com.leadinsource.bakingapp.model;
 
+import android.arch.persistence.room.ColumnInfo;
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.PrimaryKey;
 import android.os.Parcel;
 import android.os.Parcelable;
+
+import com.leadinsource.bakingapp.db.DataContract;
 
 /**
  * Model for Step from JSON
  */
-
+@Entity(tableName = DataContract.Step.TABLE_NAME)
 public class Step implements Parcelable {
+    @PrimaryKey(autoGenerate = true)
+    public int uid;
+
     private String id;
+
+
+    @ColumnInfo(name = DataContract.Ingredient.RECIPE_ID)
+    public int recipeId;
 
     private String shortDescription;
 

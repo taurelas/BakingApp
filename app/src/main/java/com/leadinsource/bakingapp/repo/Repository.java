@@ -1,12 +1,22 @@
 package com.leadinsource.bakingapp.repo;
 
 import android.arch.lifecycle.LiveData;
+import android.arch.lifecycle.MediatorLiveData;
 import android.arch.lifecycle.MutableLiveData;
+import android.arch.lifecycle.Observer;
+import android.arch.persistence.room.Room;
+import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
+import com.leadinsource.bakingapp.db.AppDatabase;
+import com.leadinsource.bakingapp.db.DbUtil;
+import com.leadinsource.bakingapp.db.RecipeDao;
 import com.leadinsource.bakingapp.model.Recipe;
+import com.leadinsource.bakingapp.model.RecipeWithData;
 import com.leadinsource.bakingapp.net.DownloadService;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import okhttp3.OkHttpClient;
@@ -25,22 +35,59 @@ public class Repository {
     private static final String BASE_URL = "http://go.udacity.com/android-baking-app-json/";
     private MutableLiveData<Boolean> idle;
     private static Repository instance;
-    private MutableLiveData<List<Recipe>> recipes;
+    private MediatorLiveData<List<Recipe>> recipes;
+    private LiveData<List<RecipeWithData>> recipesWithData;
+    private RecipeDao recipeDao;
+    private AppDatabase db;
 
-    public static Repository getInstance() {
-        if(instance==null) {
-            instance = new Repository();
+    private Repository(Context context) {
+        initDb(context);
+    }
+
+    public static Repository getInstance(Context context) {
+        if (instance == null) {
+            instance = new Repository(context);
         }
 
         return instance;
     }
 
+    private void initDb(Context context) {
+        db = Room.inMemoryDatabaseBuilder(context, AppDatabase.class).build();
+        recipeDao = db.recipeDao();
+        setIdle(false);
+        recipesWithData = recipeDao.getAllLiveData();
+    }
+
     public LiveData<List<Recipe>> getRecipes() {
         if(recipes==null) {
-            recipes = new MutableLiveData<>();
-            setIdle(false);
-            fetchRecipes();
+            recipes = new MediatorLiveData<>();
+            recipes.addSource(recipesWithData, new Observer<List<RecipeWithData>>() {
+                @Override
+                public void onChanged(@Nullable List<RecipeWithData> recipesWithData) {
+                    if(recipesWithData==null || recipesWithData.size()==0) {
+                        Timber.d("Getting data from internet");
+                        fetchRecipes();
+                    } else {
+                        Timber.d("Got data from db");
+                        ArrayList<Recipe> recipesList = new ArrayList<>();
+
+                        for (RecipeWithData recipeWithData : recipesWithData) {
+                            recipeWithData.passDataDown();
+                            recipesList.add(recipeWithData.getRecipe());
+                        }
+
+                        recipes.setValue(recipesList);
+                        setIdle(true);
+                    }
+                }
+            });
         }
+
+
+
+            //setIdle(false);
+           // fetchRecipes();
 
         return recipes;
     }
@@ -51,7 +98,7 @@ public class Repository {
         call.enqueue(new Callback<List<Recipe>>() {
             @Override
             public void onResponse(@NonNull Call<List<Recipe>> call, @NonNull Response<List<Recipe>> response) {
-                if(!response.isSuccessful()) {
+                if (!response.isSuccessful()) {
                     try {
                         //noinspection ConstantConditions
                         Timber.d(response.errorBody().string());
@@ -62,13 +109,15 @@ public class Repository {
                 }
 
                 List<Recipe> decodedResponse = response.body();
-                if(decodedResponse==null) {
+                if (decodedResponse == null) {
                     return;
                 }
-                if(recipes==null) {
-                    recipes = new MutableLiveData<>();
-                }
+
                 recipes.postValue(decodedResponse);
+                Timber.d("Inserting data into db");
+                DbUtil.insertRecipes(recipeDao, decodedResponse);
+
+                // for Espresso Idling Resources
                 idle.setValue(true);
             }
 
@@ -92,7 +141,7 @@ public class Repository {
     }
 
     public LiveData<Boolean> getIdleness() {
-        if(idle==null) {
+        if (idle == null) {
             idle = new MutableLiveData<>();
             idle.setValue(true);
         }
@@ -101,9 +150,13 @@ public class Repository {
     }
 
     public void setIdle(boolean value) {
-        if(idle==null) {
+        if (idle == null) {
             idle = new MutableLiveData<>();
         }
         idle.setValue(value);
+    }
+
+    public void finish() {
+        db.close();
     }
 }

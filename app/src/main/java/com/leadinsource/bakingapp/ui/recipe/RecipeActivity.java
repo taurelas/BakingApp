@@ -127,4 +127,5 @@ public class RecipeActivity extends AppCompatActivity {
             Timber.d("Fragment is null");
         }
     }
+
 }

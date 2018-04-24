@@ -1,10 +1,11 @@
 package com.leadinsource.bakingapp.ui.recipe;
 
+import android.app.Application;
+import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MediatorLiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.Observer;
-import android.arch.lifecycle.ViewModel;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -23,7 +24,7 @@ import timber.log.Timber;
  *
  */
 
-public class RecipeActivityViewModel extends ViewModel {
+public class RecipeActivityViewModel extends AndroidViewModel {
     private LiveData<List<Recipe>> recipes;
     private MutableLiveData<List<Step>> recipeSteps;
     private MediatorLiveData<Boolean> isLastStep;
@@ -36,9 +37,10 @@ public class RecipeActivityViewModel extends ViewModel {
     private int currentStepIndex;
     private int lastStepIndex;
 
-    public RecipeActivityViewModel() {
+    public RecipeActivityViewModel(Application application) {
+        super(application);
         // Getting instance of repository
-        repo = Repository.getInstance();
+        repo = Repository.getInstance(this.getApplication().getApplicationContext());
 
         // getting recipes from the repo
         recipes = repo.getRecipes();

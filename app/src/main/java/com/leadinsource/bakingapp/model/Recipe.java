@@ -1,14 +1,23 @@
 package com.leadinsource.bakingapp.model;
 
+import android.arch.persistence.room.ColumnInfo;
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.Ignore;
+import android.arch.persistence.room.PrimaryKey;
 import android.os.Parcel;
 import android.os.Parcelable;
+
+import com.leadinsource.bakingapp.db.DataContract;
 
 /**
  * Represents a single Recipe received from JSON
  */
-
+@Entity(tableName = DataContract.Recipe.TABLE_NAME)
 public class Recipe implements Parcelable {
-    private Ingredients[] ingredients;
+
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = DataContract.Recipe.UID)
+    public int uid;
 
     private String id;
 
@@ -18,14 +27,18 @@ public class Recipe implements Parcelable {
 
     private String image;
 
-    private Step[] steps;
+    @Ignore
+    public Ingredient[] ingredients;
 
-    public Ingredients[] getIngredients ()
+    @Ignore
+    public Step[] steps;
+
+    public Ingredient[] getIngredients()
     {
         return ingredients;
     }
 
-    public void setIngredients (Ingredients[] ingredients)
+    public void setIngredients (Ingredient[] ingredients)
     {
         this.ingredients = ingredients;
     }
@@ -93,19 +106,19 @@ public class Recipe implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeTypedArray(this.ingredients, flags);
+        dest.writeTypedArray(getIngredients(), flags);
         dest.writeString(this.id);
         dest.writeString(this.servings);
         dest.writeString(this.name);
         dest.writeString(this.image);
-        dest.writeTypedArray(this.steps, flags);
+        dest.writeTypedArray(getSteps(), flags);
     }
 
     public Recipe() {
     }
 
     protected Recipe(Parcel in) {
-        this.ingredients = in.createTypedArray(Ingredients.CREATOR);
+        this.ingredients = in.createTypedArray(Ingredient.CREATOR);
         this.id = in.readString();
         this.servings = in.readString();
         this.name = in.readString();
