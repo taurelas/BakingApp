@@ -5,6 +5,7 @@ import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.ComponentName;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -15,10 +16,11 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
 import com.leadinsource.bakingapp.R;
+import com.leadinsource.bakingapp.db.DataContract;
 import com.leadinsource.bakingapp.model.Recipe;
 import com.leadinsource.bakingapp.ui.idlingresource.SimpleIdlingResource;
-import com.leadinsource.bakingapp.ui.recipe.IngredientsWidget;
 import com.leadinsource.bakingapp.ui.recipe.RecipeActivity;
+import com.leadinsource.bakingapp.widget.IngredientsWidget;
 
 import java.util.List;
 
@@ -72,6 +74,25 @@ public class MainActivity extends AppCompatActivity implements MainListAdapter.C
                 }
             }
         });
+
+
+        Cursor cursor = getContentResolver().query(DataContract.Recipe.CONTENT_URI, null, null,null,null);
+        Timber.d("Cursor count: "+cursor.getCount());
+        //test content provider
+
+        /*new AsyncTask<Uri, Void, Cursor>() {
+
+            @Override
+            protected Cursor doInBackground(Uri... uris) {
+                return getContentResolver().query(DataContract.Recipe.CONTENT_URI, null, null,null,null);
+            }
+
+            @Override
+            protected void onPostExecute(Cursor cursor) {
+                Timber.d("Cursor count: "+cursor.getCount());
+            }
+        }.execute(DataContract.Recipe.CONTENT_URI);*/
+
 
     }
 

@@ -53,7 +53,7 @@ public class Repository {
     }
 
     private void initDb(Context context) {
-        db = Room.inMemoryDatabaseBuilder(context, AppDatabase.class).build();
+        db = Room.databaseBuilder(context, AppDatabase.class, "data").build();
         recipeDao = db.recipeDao();
         setIdle(false);
         recipesWithData = recipeDao.getAllLiveData();

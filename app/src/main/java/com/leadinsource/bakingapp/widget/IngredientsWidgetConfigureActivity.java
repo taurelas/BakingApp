@@ -1,4 +1,4 @@
-package com.leadinsource.bakingapp.ui.recipe;
+package com.leadinsource.bakingapp.widget;
 
 import android.app.Activity;
 import android.appwidget.AppWidgetManager;
@@ -16,7 +16,7 @@ import com.leadinsource.bakingapp.R;
  */
 public class IngredientsWidgetConfigureActivity extends Activity {
 
-    private static final String PREFS_NAME = "com.leadinsource.bakingapp.ui.recipe.IngredientsWidget";
+    private static final String PREFS_NAME = "com.leadinsource.bakingapp.widget.IngredientsWidget";
     private static final String PREF_PREFIX_KEY = "appwidget_";
     int mAppWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
     EditText mAppWidgetText;

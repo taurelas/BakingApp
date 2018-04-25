@@ -4,7 +4,7 @@
     package="com.leadinsource.bakingapp">
 
     <uses-permission android:name="android.permission.INTERNET" />
-
+    <uses-permission android:name="com.leadinsource.bakingapp.provider.TERMS_READ" />
     <application
         android:name=".model.app.BakingApp"
         android:allowBackup="true"
@@ -33,7 +33,7 @@
                 android:value="com.leadinsource.bakingapp.ui.main.MainActivity" />
         </activity>
 
-        <receiver android:name=".ui.recipe.IngredientsWidget">
+        <receiver android:name=".widget.IngredientsWidget">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
@@ -43,11 +43,15 @@
                 android:resource="@xml/ingredients_widget_info" />
         </receiver>
 
-        <activity android:name=".ui.recipe.IngredientsWidgetConfigureActivity">
+        <activity android:name=".widget.IngredientsWidgetConfigureActivity">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
             </intent-filter>
         </activity>
+        <provider
+            android:authorities="com.leadinsource.bakingapp.db"
+            android:name=".db.Provider"
+            android:exported="true" />
     </application>
 
 </manifest>

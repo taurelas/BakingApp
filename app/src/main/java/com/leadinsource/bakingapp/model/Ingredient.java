@@ -17,10 +17,13 @@ public class Ingredient implements Parcelable {
     @PrimaryKey(autoGenerate = true)
     public int uid;
 
+    @ColumnInfo(name = DataContract.Ingredient.MEASURE)
     private String measure;
 
+    @ColumnInfo(name = DataContract.Ingredient.INGREDIENT)
     private String ingredient;
 
+    @ColumnInfo(name = DataContract.Ingredient.QUANTITY)
     private String quantity;
 
     @ColumnInfo(name = DataContract.Ingredient.RECIPE_ID)
@@ -59,7 +62,7 @@ public class Ingredient implements Parcelable {
     @Override
     public String toString()
     {
-        return "ClassPojo [measure = "+measure+", ingredient = "+ingredient+", quantity = "+quantity+"]";
+        return ingredient + " " + quantity + " " + measure + ".";
     }
 
     @Override

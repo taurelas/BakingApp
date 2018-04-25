@@ -1,4 +1,4 @@
-package com.leadinsource.bakingapp.ui.recipe;
+package com.leadinsource.bakingapp.widget;
 
 import android.content.Context;
 import android.widget.RemoteViews;
