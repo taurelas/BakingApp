@@ -30,6 +30,9 @@ public interface RecipeDao {
     @Query("SELECT * FROM "+ DataContract.Recipe.TABLE_NAME + " WHERE "+ DataContract.Recipe.ID + " = :id")
     Cursor getRecipeByRecipeId(long id);
 
+    @Query("SELECT * FROM "+ DataContract.Recipe.TABLE_NAME + " WHERE "+ DataContract.Recipe.ID + " = :id")
+    LiveData<List<Recipe>> getRecipeLiveDataByRecipeId(long id);
+
     @Query("SELECT * FROM "+ DataContract.Ingredient.TABLE_NAME + " WHERE "+ DataContract.Ingredient.RECIPE_ID + " = :id")
     Cursor getIngredientByRecipeId(long id);
 

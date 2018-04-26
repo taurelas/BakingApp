@@ -21,11 +21,11 @@ public class MainListAdapter extends RecyclerView.Adapter<MainListAdapter.ViewHo
     private Callback callback;
     private List<Recipe> data;
 
-    interface Callback {
+    public interface Callback {
         void onClick(Recipe recipe);
     }
 
-    MainListAdapter(Callback callback, List<Recipe> data) {
+    public MainListAdapter(Callback callback, List<Recipe> data) {
         this.callback = callback;
         this.data = data;
     }

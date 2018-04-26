@@ -1,15 +1,20 @@
 package com.leadinsource.bakingapp.db;
 
+import android.database.Cursor;
 import android.os.AsyncTask;
+import android.support.annotation.NonNull;
 
 import com.leadinsource.bakingapp.model.Ingredient;
 import com.leadinsource.bakingapp.model.Recipe;
 import com.leadinsource.bakingapp.model.Step;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import timber.log.Timber;
+
 /**
- * Created by Matt on 24/04/2018.
+ * Utils for Db
  */
 
 public class DbUtil {
@@ -41,6 +46,24 @@ public class DbUtil {
         /*for(Recipe recipe : recipes) {
             insertRecipe(recipeDao, recipe);
         }*/
+    }
+
+    @NonNull
+    public static List<Recipe> getRecipesFromCursor(Cursor cursor) {
+
+        List<Recipe> newList = new ArrayList<>();
+
+        for(cursor.moveToFirst();!cursor.isAfterLast();cursor.moveToNext()) {
+            Recipe recipe = new Recipe();
+            recipe.uid = cursor.getInt(cursor.getColumnIndex(DataContract.Recipe.UID));
+            recipe.setName(cursor.getString(cursor.getColumnIndex(DataContract.Recipe.NAME)));
+            newList.add(recipe);
+        }
+
+        cursor.close();
+
+        Timber.d("Returning %s recipes", newList.size());
+        return newList;
     }
 
     private static class MyAsync extends AsyncTask<Param, Void, Void> {

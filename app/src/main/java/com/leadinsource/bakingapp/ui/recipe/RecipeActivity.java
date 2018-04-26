@@ -9,23 +9,24 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.Toast;
 
 import com.leadinsource.bakingapp.NavigationFragment;
 import com.leadinsource.bakingapp.R;
 import com.leadinsource.bakingapp.model.Recipe;
 import com.leadinsource.bakingapp.model.Step;
 import com.leadinsource.bakingapp.ui.main.MainActivity;
+import com.leadinsource.bakingapp.widget.ListRemoteViewsFactory;
 
 import timber.log.Timber;
 
 /**
- * Created by Matt on 18/04/2018.
+ * Activity displaying steps and details for the particular recipe.
  */
 
 public class RecipeActivity extends AppCompatActivity {
 
     boolean twoPanes;
-    private Recipe recipe;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,20 +37,25 @@ public class RecipeActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
 
-        if(intent!=null) {
-            Timber.d("Intent not null");
-            recipe = intent.getParcelableExtra(MainActivity.EXTRA_RECIPE);
-            if(recipe!=null) {
-                Timber.d("Recipe is "+ recipe.getName());
-                viewModel.setRecipeToDisplay(recipe);
-                setTitle(recipe.getName());
-            } else {
-                Timber.d("Recipe is null");
-                Timber.d("Recipe is %s",intent.toString());
-            }
-
+        if(intent==null) {
+            Timber.d("Intent is null");
+            Toast.makeText(this, "Not sure what your intention is here", Toast.LENGTH_SHORT).show();
+            finish();
         }
 
+        assert intent != null; Timber.d("Intent not null");
+
+        int recipeId = intent.getIntExtra(ListRemoteViewsFactory.EXTRA_RECIPE_ID, -1);
+
+        if(recipeId<=-1) {
+            Timber.d("Recipe is null in intent %s", intent);
+            Toast.makeText(this, "Unknown recipe", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+
+        Timber.d("All ok with the recipeId %s", recipeId);
+
+        viewModel.setCurrentRecipeId(recipeId);
 
         View view = findViewById(R.id.step_detail_container);
 
@@ -78,6 +84,15 @@ public class RecipeActivity extends AppCompatActivity {
               /*      .addToBackStack("Recipe") */
                     .commit();
         }
+
+        viewModel.getCurrentRecipe().observe(this, new Observer<Recipe>() {
+            @Override
+            public void onChanged(@Nullable Recipe recipe) {
+                if (recipe!=null) {
+                    setTitle(recipe.getName());
+                }
+            }
+        });
 
 
         viewModel.getCurrentStep().observe(this, new Observer<Step>() {
