@@ -16,7 +16,7 @@ import com.leadinsource.bakingapp.ui.recipe.RecipeActivityViewModel;
 import timber.log.Timber;
 
 /**
- * Created by Matt on 17/04/2018.
+ * Fragment for navigation buttons between recipe steps
  */
 
 public class NavigationFragment extends Fragment {
@@ -47,6 +47,7 @@ public class NavigationFragment extends Fragment {
 
 
         if(nextButton!=null) {
+            nextButton.setVisibility(View.VISIBLE);
             nextButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -56,6 +57,7 @@ public class NavigationFragment extends Fragment {
         }
 
         if(previousButton!=null) {
+            previousButton.setVisibility(View.VISIBLE);
             previousButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

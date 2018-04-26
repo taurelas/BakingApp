@@ -3,7 +3,7 @@ package com.leadinsource.bakingapp.db;
 import android.net.Uri;
 
 /**
- * Created by Matt on 20/04/2018.
+ * Data Contract for DB operations
  */
 
 public class DataContract {
@@ -19,6 +19,7 @@ public class DataContract {
         public static final String ID = "id";
         public static final Uri CONTENT_URI =
                 BASE_CONTENT_URI.buildUpon().appendPath(PATH_RECIPES).build();
+        public static final String NAME = "name";
     }
 
     public static class Ingredient {

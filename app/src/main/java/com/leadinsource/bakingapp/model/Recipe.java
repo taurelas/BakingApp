@@ -22,7 +22,7 @@ public class Recipe implements Parcelable {
     private String id;
 
     private String servings;
-
+    @ColumnInfo(name = DataContract.Recipe.NAME)
     private String name;
 
     private String image;

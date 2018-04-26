@@ -10,17 +10,15 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import com.leadinsource.bakingapp.R;
 import com.leadinsource.bakingapp.model.Recipe;
 import com.leadinsource.bakingapp.model.Step;
-import com.leadinsource.bakingapp.ui.main.MainActivity;
 
 import timber.log.Timber;
 
 /**
- * Created by Matt on 17/04/2018.
+ * Fragment for List of steps of a given recipe
  */
 
 public class StepListFragment extends Fragment implements RecipeAdapter.Callback {
@@ -38,10 +36,6 @@ public class StepListFragment extends Fragment implements RecipeAdapter.Callback
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         viewModel = ViewModelProviders.of(getActivity()).get(RecipeActivityViewModel.class);
-        if (getArguments() != null) {
-            viewModel.setRecipeToDisplay((Recipe) getArguments().get(MainActivity.EXTRA_RECIPE));
-        }
-
     }
 
     @Nullable
@@ -67,7 +61,9 @@ public class StepListFragment extends Fragment implements RecipeAdapter.Callback
         viewModel.getCurrentRecipe().observe(getActivity(), new Observer<Recipe>() {
             @Override
             public void onChanged(@Nullable Recipe recipe) {
-                recyclerView.setAdapter(new RecipeAdapter(StepListFragment.this, recipe));
+                if (recipe!=null) {
+                    recyclerView.setAdapter(new RecipeAdapter(StepListFragment.this, recipe));
+                }
             }
         });
 
@@ -78,6 +74,5 @@ public class StepListFragment extends Fragment implements RecipeAdapter.Callback
     @Override
     public void onClick(Step step) {
         viewModel.setCurrentStep(step);
-        Toast.makeText(getContext(), "Clicked step", Toast.LENGTH_SHORT).show();
     }
 }

@@ -24,6 +24,8 @@ import java.util.List;
 
 import timber.log.Timber;
 
+import static com.leadinsource.bakingapp.widget.ListRemoteViewsFactory.EXTRA_RECIPE_ID;
+
 /**
  * Displays list of recipes obtained from a remote json
  */
@@ -33,7 +35,8 @@ public class MainActivity extends AppCompatActivity implements MainListAdapter.C
     public static final String EXTRA_STEP = "extra_step";
     private RecyclerView recyclerView;
 
-    @Nullable private SimpleIdlingResource idlingResource;
+    @Nullable
+    private SimpleIdlingResource idlingResource;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,45 +69,31 @@ public class MainActivity extends AppCompatActivity implements MainListAdapter.C
         viewModel.getIdleness().observe(this, new Observer<Boolean>() {
             @Override
             public void onChanged(@Nullable Boolean idle) {
-                if (idle!=null) {
+                if (idle != null) {
                     getIdlingResource();
                     idlingResource.setIsIdleNow(idle);
                 }
             }
         });
-
-
-        /*Cursor cursor = getContentResolver().query(DataContract.Recipe.CONTENT_URI, null, null,null,null);
-        Timber.d("Cursor count: "+cursor.getCount());*/
-        //test content provider
-
-        /*new AsyncTask<Uri, Void, Cursor>() {
-
-            @Override
-            protected Cursor doInBackground(Uri... uris) {
-                return getContentResolver().query(DataContract.Recipe.CONTENT_URI, null, null,null,null);
-            }
-
-            @Override
-            protected void onPostExecute(Cursor cursor) {
-                Timber.d("Cursor count: "+cursor.getCount());
-            }
-        }.execute(DataContract.Recipe.CONTENT_URI);*/
-
-
     }
 
     @Override
     public void onClick(Recipe recipe) {
         Intent intent = new Intent(this, RecipeActivity.class);
-        intent.putExtra(EXTRA_RECIPE, recipe);
+        int id;
+        if(recipe.uid>0) {
+            id = recipe.uid;
+        } else {
+            id = Integer.valueOf(recipe.getId());
+        }
+        intent.putExtra(EXTRA_RECIPE_ID, id);
         startActivity(intent);
     }
 
     @VisibleForTesting
     @NonNull
     public IdlingResource getIdlingResource() {
-        if(idlingResource==null) {
+        if (idlingResource == null) {
             idlingResource = new SimpleIdlingResource();
         }
 

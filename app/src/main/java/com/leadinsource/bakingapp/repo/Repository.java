@@ -53,6 +53,7 @@ public class Repository {
     }
 
     private void initDb(Context context) {
+        Timber.d("Initing db in Repo");
         db = Room.databaseBuilder(context, AppDatabase.class, "data").build();
         recipeDao = db.recipeDao();
         setIdle(false);
@@ -60,7 +61,9 @@ public class Repository {
     }
 
     public LiveData<List<Recipe>> getRecipes() {
+        Timber.d("Getting recipes");
         if(recipes==null) {
+            Timber.d("Recipes are null");
             recipes = new MediatorLiveData<>();
             recipes.addSource(recipesWithData, new Observer<List<RecipeWithData>>() {
                 @Override
@@ -84,16 +87,12 @@ public class Repository {
             });
         }
 
-
-
-            //setIdle(false);
-           // fetchRecipes();
-
         return recipes;
     }
 
 
     private void fetchRecipes() {
+        Timber.d("Fetching recipes");
         Call<List<Recipe>> call = getDownloadService().downloadRecipes(BASE_URL);
         call.enqueue(new Callback<List<Recipe>>() {
             @Override
@@ -159,4 +158,5 @@ public class Repository {
     public void finish() {
         db.close();
     }
+
 }
