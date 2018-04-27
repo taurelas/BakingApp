@@ -10,8 +10,10 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.leadinsource.bakingapp.R;
+import com.leadinsource.bakingapp.model.Ingredient;
 import com.leadinsource.bakingapp.model.Recipe;
 import com.leadinsource.bakingapp.model.Step;
 
@@ -25,7 +27,6 @@ public class StepListFragment extends Fragment implements RecipeAdapter.Callback
 
     boolean mTwoPane;
     private RecipeActivityViewModel viewModel;
-    private View rootView;
     private RecyclerView recyclerView;
 
     public StepListFragment() {
@@ -33,15 +34,18 @@ public class StepListFragment extends Fragment implements RecipeAdapter.Callback
     }
 
     @Override
+    @SuppressWarnings("ConstantConditions")
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         viewModel = ViewModelProviders.of(getActivity()).get(RecipeActivityViewModel.class);
     }
 
     @Nullable
     @Override
+    @SuppressWarnings("ConstantConditions")
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        rootView = inflater.inflate(R.layout.fragment_step_list, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_step_list, container, false);
 
         if (rootView.findViewById(R.id.step_detail_container) != null) {
             // The detail container view will be present only in the
@@ -53,7 +57,6 @@ public class StepListFragment extends Fragment implements RecipeAdapter.Callback
         } else {
             Timber.d("Two pane is false");
         }
-
 
         recyclerView = rootView.findViewById(R.id.rv_steps_list);
         assert recyclerView != null;
@@ -67,12 +70,16 @@ public class StepListFragment extends Fragment implements RecipeAdapter.Callback
             }
         });
 
-
         return rootView;
     }
 
     @Override
     public void onClick(Step step) {
         viewModel.setCurrentStep(step);
+    }
+
+    @Override
+    public void onClick(Ingredient[] ingredients) {
+        Toast.makeText(getContext(), "Clicked ingredients", Toast.LENGTH_SHORT).show();
     }
 }
