@@ -13,10 +13,13 @@ import android.widget.Toast;
 
 import com.leadinsource.bakingapp.NavigationFragment;
 import com.leadinsource.bakingapp.R;
+import com.leadinsource.bakingapp.model.Ingredient;
 import com.leadinsource.bakingapp.model.Recipe;
 import com.leadinsource.bakingapp.model.Step;
 import com.leadinsource.bakingapp.ui.main.MainActivity;
 import com.leadinsource.bakingapp.widget.ListRemoteViewsFactory;
+
+import java.util.List;
 
 import timber.log.Timber;
 
@@ -33,21 +36,22 @@ public class RecipeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recipe);
 
-        RecipeActivityViewModel viewModel = ViewModelProviders.of(this).get(RecipeActivityViewModel.class);
+        final RecipeActivityViewModel viewModel = ViewModelProviders.of(this).get(RecipeActivityViewModel.class);
 
         Intent intent = getIntent();
 
-        if(intent==null) {
+        if (intent == null) {
             Timber.d("Intent is null");
             Toast.makeText(this, "Not sure what your intention is here", Toast.LENGTH_SHORT).show();
             finish();
         }
 
-        assert intent != null; Timber.d("Intent not null");
+        assert intent != null;
+        Timber.d("Intent not null");
 
         int recipeId = intent.getIntExtra(ListRemoteViewsFactory.EXTRA_RECIPE_ID, -1);
 
-        if(recipeId<=-1) {
+        if (recipeId <= -1) {
             Timber.d("Recipe is null in intent %s", intent);
             Toast.makeText(this, "Unknown recipe", Toast.LENGTH_SHORT).show();
             finish();
@@ -59,7 +63,7 @@ public class RecipeActivity extends AppCompatActivity {
 
         View view = findViewById(R.id.step_detail_container);
 
-        if(view!=null) {
+        if (view != null) {
             //two panes
             twoPanes = true;
             Timber.d("Two panes");
@@ -88,7 +92,7 @@ public class RecipeActivity extends AppCompatActivity {
         viewModel.getCurrentRecipe().observe(this, new Observer<Recipe>() {
             @Override
             public void onChanged(@Nullable Recipe recipe) {
-                if (recipe!=null) {
+                if (recipe != null) {
                     setTitle(recipe.getName());
                 }
             }
@@ -98,7 +102,7 @@ public class RecipeActivity extends AppCompatActivity {
         viewModel.getCurrentStep().observe(this, new Observer<Step>() {
             @Override
             public void onChanged(@Nullable Step step) {
-                if(step!=null) {
+                if (step != null) {
                     StepDetailFragment stepDetailFragment = new StepDetailFragment();
                     Bundle bundle = new Bundle();
                     bundle.putParcelable(MainActivity.EXTRA_STEP, step);
@@ -106,7 +110,7 @@ public class RecipeActivity extends AppCompatActivity {
                     //we only want 1 step in the back stack
                     getSupportFragmentManager().popBackStackImmediate("Step", FragmentManager.POP_BACK_STACK_INCLUSIVE);
                     // if we have two panes
-                    if(twoPanes) {
+                    if (twoPanes) {
                         getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.step_detail_container, stepDetailFragment)
                             /*    .addToBackStack("Step") */
@@ -126,6 +130,38 @@ public class RecipeActivity extends AppCompatActivity {
             }
         });
 
+        viewModel.displayIngredients().observe(this, new Observer<List<Ingredient>>() {
+            @Override
+            public void onChanged(@Nullable List<Ingredient> display) {
+                if (display != null) {
+                    IngredientsFragment ingredientsFragment = new IngredientsFragment();
+                    Bundle bundle = new Bundle();
+                    bundle.putParcelableArray(IngredientsFragment.EXTRA_INGREDIENTS, display.toArray(new Ingredient[display.size()]));
+                    ingredientsFragment.setArguments(bundle);
+                    //we only want 1 step in the back stack
+                    getSupportFragmentManager().popBackStackImmediate("Step", FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                    // if we have two panes
+                    if (twoPanes) {
+                        getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.step_detail_container, ingredientsFragment)
+                            /*    .addToBackStack("Step") */
+                                .commit();
+                    } else {
+                        getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.step_list_container, ingredientsFragment)
+                                .addToBackStack("Step")
+                                .commit();
+
+                        NavigationFragment navigationFragment = new NavigationFragment();
+                        getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.bottom_navigation, navigationFragment, "NAV")
+                                .commit();
+                    }
+
+                }
+            }
+        });
+
     }
 
     @Override
@@ -134,7 +170,7 @@ public class RecipeActivity extends AppCompatActivity {
         super.onBackPressed();
         Fragment fragment = getSupportFragmentManager().findFragmentByTag("NAV");
 
-        if(fragment!=null) {
+        if (fragment != null) {
             getSupportFragmentManager().beginTransaction()
                     .remove(fragment)
                     .commit();

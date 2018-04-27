@@ -9,10 +9,12 @@ import android.arch.lifecycle.Observer;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.leadinsource.bakingapp.model.Ingredient;
 import com.leadinsource.bakingapp.model.Recipe;
 import com.leadinsource.bakingapp.model.Step;
 import com.leadinsource.bakingapp.repo.Repository;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -28,8 +30,11 @@ public class RecipeActivityViewModel extends AndroidViewModel {
     private MediatorLiveData<Boolean> isLastStep;
     private MediatorLiveData<Recipe> currentRecipe;
     private MutableLiveData<Step> currentStep;
+    @NonNull
+    private MutableLiveData<List<Ingredient>> displayedIngredients = new MutableLiveData<>();
     private MutableLiveData<Integer> currentRecipeId;
     private List<Recipe> recipes;
+    private List<Ingredient> ingredients = new ArrayList<>();
     private Repository repo;
 
     // indices tracking for navigation
@@ -61,6 +66,7 @@ public class RecipeActivityViewModel extends AndroidViewModel {
 
     public void setCurrentStep(Step step) {
         Timber.d("Setting current step %s", step);
+        displayedIngredients.setValue(null);
         currentStep.postValue(step);
         currentStepIndex = Integer.valueOf(step.getId());
         Timber.d("Current step %s", currentStepIndex);
@@ -74,21 +80,38 @@ public class RecipeActivityViewModel extends AndroidViewModel {
     public void moveToNext() {
         Boolean last = isLastStep.getValue();
         Timber.d("Moving to next, is it last? %s", last);
-        if (last != null && !last) {
-            currentStepIndex++;
+        if(isDisplayingIngredients()) {
+            displayedIngredients.setValue(null);
+            currentStepIndex=0;
             currentStep.postValue(recipeSteps.getValue().get(currentStepIndex));
+        } else {
+            if (last != null && !last) {
+                currentStepIndex++;
+                currentStep.postValue(recipeSteps.getValue().get(currentStepIndex));
+            }
         }
+    }
+
+    private boolean isDisplayingIngredients() {
+        return displayedIngredients.getValue() != null;
+
     }
 
     public void moveToPrevious() {
         if (!isFirst()) {
-            currentStepIndex--;
-            currentStep.postValue(recipeSteps.getValue().get(currentStepIndex));
+            if(currentStepIndex==0) {
+                displayedIngredients.setValue(ingredients);
+            } else{
+                currentStepIndex--;
+                currentStep.postValue(recipeSteps.getValue().get(currentStepIndex));
+            }
+
         }
     }
 
     public boolean isFirst() {
-        return currentStepIndex == 0;
+
+       return isDisplayingIngredients() || !hasIngredients() && currentStepIndex == 0;
     }
 
     @NonNull
@@ -117,10 +140,11 @@ public class RecipeActivityViewModel extends AndroidViewModel {
             currentRecipe.addSource(currentRecipeId, new Observer<Integer>() {
                 @Override
                 public void onChanged(@Nullable Integer id) {
-                    if (id!=null) {
+                    if (id != null) {
                         Recipe recipe = getRecipeById(id);
                         currentRecipe.postValue(recipe);
                         recipeSteps.postValue(Arrays.asList(recipe.getSteps()));
+                        ingredients = Arrays.asList(recipe.getIngredients());
                         lastStepIndex = recipe.steps.length - 1;
                     }
                 }
@@ -148,5 +172,27 @@ public class RecipeActivityViewModel extends AndroidViewModel {
         }
 
         return new Recipe();
+    }
+
+    private boolean hasIngredients() {
+        if (currentRecipe == null) {
+            return false;
+        }
+
+        Recipe recipe = currentRecipe.getValue();
+
+        return recipe != null
+                && recipe.getIngredients() != null
+                && recipe.getIngredients().length >= 1;
+
+    }
+
+    public void displayIngredients(List<Ingredient> ingredients) {
+        displayedIngredients.setValue(ingredients);
+
+    }
+
+    public LiveData<List<Ingredient>> displayIngredients() {
+        return displayedIngredients;
     }
 }
