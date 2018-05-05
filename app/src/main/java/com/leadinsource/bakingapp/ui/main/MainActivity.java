@@ -6,6 +6,7 @@ import android.arch.lifecycle.ViewModelProviders;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
@@ -34,6 +35,7 @@ public class MainActivity extends AppCompatActivity implements MainListAdapter.C
     public static final String EXTRA_RECIPE = "extra_recipe";
     public static final String EXTRA_STEP = "extra_step";
     private RecyclerView recyclerView;
+    private Parcelable recyclerViewState;
 
     @Nullable
     private SimpleIdlingResource idlingResource;
@@ -55,6 +57,10 @@ public class MainActivity extends AppCompatActivity implements MainListAdapter.C
         ));
         RecyclerView.LayoutManager lm = new GridLayoutManager(this, getResources().getInteger(R.integer.main_list_columns));
         recyclerView.setLayoutManager(lm);
+        if(recyclerViewState !=null) {
+            recyclerView.getLayoutManager().onRestoreInstanceState(recyclerViewState);
+            recyclerViewState = null;
+        }
 
         viewModel.getRecipeNames().observe(this, new Observer<List<Recipe>>() {
             @Override
@@ -88,6 +94,20 @@ public class MainActivity extends AppCompatActivity implements MainListAdapter.C
         }
         intent.putExtra(EXTRA_RECIPE_ID, id);
         startActivity(intent);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable("RV", recyclerView.getLayoutManager().onSaveInstanceState());
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        if(savedInstanceState!=null) {
+            recyclerViewState = savedInstanceState.getParcelable("RV");
+        }
     }
 
     @VisibleForTesting
