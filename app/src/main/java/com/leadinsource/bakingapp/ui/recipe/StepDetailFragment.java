@@ -1,8 +1,11 @@
 package com.leadinsource.bakingapp.ui.recipe;
 
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,8 +29,6 @@ import com.leadinsource.bakingapp.model.Step;
 
 import timber.log.Timber;
 
-import static com.leadinsource.bakingapp.ui.main.MainActivity.EXTRA_STEP;
-
 /**
  * A fragment representing a single Step detail screen.
 
@@ -36,6 +37,9 @@ public class StepDetailFragment extends Fragment {
 
     private Step step;
     private SimpleExoPlayer exoPlayer;
+    private RecipeActivityViewModel viewModel;
+    private TextView textView;
+    private SimpleExoPlayerView playerView;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -48,10 +52,12 @@ public class StepDetailFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (getArguments().containsKey(EXTRA_STEP)) {
+        viewModel = ViewModelProviders.of(getActivity()).get(RecipeActivityViewModel.class);
+
+   /*     if (getArguments().containsKey(EXTRA_STEP)) {
             step = getArguments().getParcelable(EXTRA_STEP);
             Timber.d("Creating Fragment for %s", step.getShortDescription());
-        }
+        }*/
     }
 
     @Override
@@ -59,35 +65,41 @@ public class StepDetailFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.step, container, false);
 
-        // Show the dummy content as text in a TextView.
-        if (step != null) {
+        textView = rootView.findViewById(R.id.step_description);
+        playerView = rootView.findViewById(R.id.playerView);
 
-            TextView textView = rootView.findViewById(R.id.step_description);
+        viewModel.getCurrentStep().observe(getActivity(), new Observer<Step>() {
+            @Override
+            public void onChanged(@Nullable Step step) {
+                if (step != null) {
 
-            if(textView!=null) {
-                textView.setText(step.getDescription());
+                    if(textView !=null) {
+                        textView.setText(step.getDescription());
+                    }
+
+                    if(playerView!=null) {
+                        if(step.getVideoURL()!=null && step.getVideoURL().length()>0 && getContext()!=null) {
+                            TrackSelector trackSelector = new DefaultTrackSelector();
+                            LoadControl loadControl = new DefaultLoadControl();
+                            exoPlayer = ExoPlayerFactory.newSimpleInstance(getContext(), trackSelector, loadControl);
+                            playerView.setPlayer(exoPlayer);
+                            Uri videoUrl = Uri.parse(step.getVideoURL());
+                            String userAgent = Util.getUserAgent(getContext(), "BakingApp");
+                            MediaSource mediaSource = new ExtractorMediaSource(videoUrl, new DefaultDataSourceFactory(
+                                    getContext(), userAgent), new DefaultExtractorsFactory(), null, null);
+                            exoPlayer.prepare(mediaSource);
+                            exoPlayer.setPlayWhenReady(true);
+                        } else {
+                            playerView.setVisibility(View.GONE);
+                            Timber.d("Setting visibility to gone");
+                        }
+                    }
+
+                } else {
+                    Timber.d("Step is null");
+                }
             }
-
-            SimpleExoPlayerView playerView = rootView.findViewById(R.id.playerView);
-
-            if(step.getVideoURL()!=null && step.getVideoURL().length()>0 && getContext()!=null) {
-                TrackSelector trackSelector = new DefaultTrackSelector();
-                LoadControl loadControl = new DefaultLoadControl();
-                exoPlayer = ExoPlayerFactory.newSimpleInstance(getContext(), trackSelector, loadControl);
-                playerView.setPlayer(exoPlayer);
-                Uri videoUrl = Uri.parse(step.getVideoURL());
-                String userAgent = Util.getUserAgent(getContext(), "BakingApp");
-                MediaSource mediaSource = new ExtractorMediaSource(videoUrl, new DefaultDataSourceFactory(
-                        getContext(), userAgent), new DefaultExtractorsFactory(), null, null);
-                exoPlayer.prepare(mediaSource);
-                exoPlayer.setPlayWhenReady(true);
-            } else {
-                playerView.setVisibility(View.GONE);
-                Timber.d("Setting visibility to gone");
-            }
-        } else {
-            Timber.d("Step is null");
-        }
+        });
 
         return rootView;
     }

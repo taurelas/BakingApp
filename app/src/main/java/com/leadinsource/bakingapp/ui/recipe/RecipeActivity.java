@@ -16,7 +16,6 @@ import com.leadinsource.bakingapp.R;
 import com.leadinsource.bakingapp.model.Ingredient;
 import com.leadinsource.bakingapp.model.Recipe;
 import com.leadinsource.bakingapp.model.Step;
-import com.leadinsource.bakingapp.ui.main.MainActivity;
 import com.leadinsource.bakingapp.widget.ListRemoteViewsFactory;
 
 import java.util.List;
@@ -29,7 +28,13 @@ import timber.log.Timber;
 
 public class RecipeActivity extends AppCompatActivity {
 
+    /**
+     * indicates whether the screen displays two panes or one
+     */
     boolean twoPanes;
+    private IngredientsFragment ingredientsFragment;
+    private StepListFragment stepListFragment;
+    private StepDetailFragment stepDetailFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,8 +43,20 @@ public class RecipeActivity extends AppCompatActivity {
 
         final RecipeActivityViewModel viewModel = ViewModelProviders.of(this).get(RecipeActivityViewModel.class);
 
-        Intent intent = getIntent();
+        // restoring fragments if needed, the fields remain null if not restored
+        if(savedInstanceState!=null) {
+            Fragment fragment = getSupportFragmentManager().getFragment(savedInstanceState, "Step");
+            if(fragment instanceof IngredientsFragment) {
+                ingredientsFragment = (IngredientsFragment) fragment;
+            } else if(fragment instanceof StepDetailFragment) {
+                stepDetailFragment = (StepDetailFragment) fragment;
+            }
 
+            stepListFragment = (StepListFragment)getSupportFragmentManager().getFragment(savedInstanceState, "StepList");
+        }
+
+        Intent intent = getIntent();
+        // finish if no intent, the activity without is useless
         if (intent == null) {
             Timber.d("Intent is null");
             Toast.makeText(this, "Not sure what your intention is here", Toast.LENGTH_SHORT).show();
@@ -47,48 +64,33 @@ public class RecipeActivity extends AppCompatActivity {
         }
 
         assert intent != null;
-        Timber.d("Intent not null");
 
+        // getting recipeId from intent
         int recipeId = intent.getIntExtra(ListRemoteViewsFactory.EXTRA_RECIPE_ID, -1);
 
+        // again finish if invalid recipeId
         if (recipeId <= -1) {
             Timber.d("Recipe is null in intent %s", intent);
             Toast.makeText(this, "Unknown recipe", Toast.LENGTH_SHORT).show();
             finish();
         }
 
-        Timber.d("All ok with the recipeId %s", recipeId);
-
         viewModel.setCurrentRecipeId(recipeId);
 
+        // if step_detail_container exists, it must be two panes
         View view = findViewById(R.id.step_detail_container);
+        twoPanes = (view != null);
 
-        if (view != null) {
-            //two panes
-            twoPanes = true;
-            Timber.d("Two panes");
-            StepListFragment stepListFragment = new StepListFragment();
-            /* Bundle bundle = new Bundle();
-            bundle.putParcelable(MainActivity.EXTRA_RECIPE, recipe);
-            stepListFragment.setArguments(bundle); */
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.step_list_container, stepListFragment)
-              /*      .addToBackStack("Recipe") */
-                    .commit();
-
-        } else {
-            //one pane
-            twoPanes = false;
-            StepListFragment stepListFragment = new StepListFragment();
-            /* Bundle bundle = new Bundle();
-            bundle.putParcelable(MainActivity.EXTRA_RECIPE, recipe);
-            stepListFragment.setArguments(bundle); */
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.step_list_container, stepListFragment)
-              /*      .addToBackStack("Recipe") */
-                    .commit();
+        // adding list of steps to a layout
+        if(stepListFragment==null) {
+            stepListFragment = new StepListFragment();
         }
 
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.step_list_container, stepListFragment)
+                .commit();
+
+        // adding title when required
         viewModel.getCurrentRecipe().observe(this, new Observer<Recipe>() {
             @Override
             public void onChanged(@Nullable Recipe recipe) {
@@ -103,13 +105,24 @@ public class RecipeActivity extends AppCompatActivity {
             @Override
             public void onChanged(@Nullable Step step) {
                 if (step != null) {
-                    StepDetailFragment stepDetailFragment = new StepDetailFragment();
-                    Bundle bundle = new Bundle();
+                    if(stepDetailFragment==null) {
+                        stepDetailFragment = new StepDetailFragment();
+                    }
+
+
+                    /*Bundle bundle = new Bundle();
                     bundle.putParcelable(MainActivity.EXTRA_STEP, step);
-                    stepDetailFragment.setArguments(bundle);
+                    stepDetailFragment.setArguments(bundle);*/
                     //we only want 1 step in the back stack
                     getSupportFragmentManager().popBackStackImmediate("Step", FragmentManager.POP_BACK_STACK_INCLUSIVE);
-                    // if we have two panes
+                    /*
+                        With two panes, we want step details inside a container but we don't want it
+                        in the backstack.
+
+                        With one pane, we want step dteails inside a container but we do want it in
+                        the backstack since it covers the whole screen.
+                        With one pane, we also need navigation which should not affect the backstack
+                     */
                     if (twoPanes) {
                         getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.step_detail_container, stepDetailFragment)
@@ -120,7 +133,6 @@ public class RecipeActivity extends AppCompatActivity {
                                 .replace(R.id.step_list_container, stepDetailFragment)
                                 .addToBackStack("Step")
                                 .commit();
-
                         NavigationFragment navigationFragment = new NavigationFragment();
                         getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.bottom_navigation, navigationFragment, "NAV")
@@ -134,7 +146,7 @@ public class RecipeActivity extends AppCompatActivity {
             @Override
             public void onChanged(@Nullable List<Ingredient> display) {
                 if (display != null) {
-                    IngredientsFragment ingredientsFragment = new IngredientsFragment();
+                    ingredientsFragment = new IngredientsFragment();
                     Bundle bundle = new Bundle();
                     bundle.putParcelableArray(IngredientsFragment.EXTRA_INGREDIENTS, display.toArray(new Ingredient[display.size()]));
                     ingredientsFragment.setArguments(bundle);
@@ -162,6 +174,29 @@ public class RecipeActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        Timber.d("On save instance state by activity");
+        super.onSaveInstanceState(outState);
+        if(ingredientsFragment==null) {
+            Timber.d("Saving instance state: ingredients is null");
+        } else {
+            getSupportFragmentManager().putFragment(outState, "Step", ingredientsFragment);
+        }
+        if(stepListFragment==null) {
+            Timber.d("Saving instance state: List is null");
+        } else {
+            Timber.d("Saving instance state: List is not null!");
+            getSupportFragmentManager().putFragment(outState, "StepList", stepListFragment);
+        }
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        Timber.d("On restore instance state");
+        super.onRestoreInstanceState(savedInstanceState);
     }
 
     @Override

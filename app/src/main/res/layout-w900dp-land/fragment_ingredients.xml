@@ -42,8 +42,7 @@
             android:layout_marginEnd="8dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
-            android:lineSpacingExtra="18sp"
-            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:textAppearance="@style/TextAppearance.AppCompat.Display1"
             tools:text="Ingredient\nFlour" />
     </ScrollView>
 </LinearLayout>
