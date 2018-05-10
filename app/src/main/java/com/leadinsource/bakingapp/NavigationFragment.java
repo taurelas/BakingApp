@@ -67,11 +67,16 @@ public class NavigationFragment extends Fragment {
         }
 
 
-        if(viewModel.isFirst()) {
-
-            previousButton.setVisibility(View.INVISIBLE);
-        }
-
+        viewModel.isFirstStep().observe(getActivity(), new Observer<Boolean>() {
+            @Override
+            public void onChanged(@Nullable Boolean isFirst) {
+                if(isFirst) {
+                    previousButton.setVisibility(View.INVISIBLE);
+                } else {
+                    previousButton.setVisibility(View.VISIBLE);
+                }
+            }
+        });
 
         viewModel.isLastStep().observe(getActivity(), new Observer<Boolean>() {
             @Override

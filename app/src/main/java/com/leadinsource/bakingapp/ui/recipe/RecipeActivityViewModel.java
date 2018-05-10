@@ -28,6 +28,7 @@ import timber.log.Timber;
 public class RecipeActivityViewModel extends AndroidViewModel {
     private MediatorLiveData<List<Step>> recipeSteps;
     private MediatorLiveData<Boolean> isLastStep;
+    private MediatorLiveData<Boolean> isFirstStep;
     private MediatorLiveData<Recipe> currentRecipe;
     private MutableLiveData<Step> currentStep;
     @NonNull
@@ -80,6 +81,7 @@ public class RecipeActivityViewModel extends AndroidViewModel {
     public void moveToNext() {
         Boolean last = isLastStep.getValue();
         Timber.d("Moving to next, is it last? %s", last);
+        isFirstStep.postValue(false);
         if(isDisplayingIngredients()) {
             displayedIngredients.setValue(null);
             currentStepIndex=0;
@@ -101,11 +103,12 @@ public class RecipeActivityViewModel extends AndroidViewModel {
         if (!isFirst()) {
             if(currentStepIndex==0) {
                 displayedIngredients.setValue(ingredients);
+                isFirstStep.postValue(true);
             } else{
                 currentStepIndex--;
+                isFirstStep.postValue(false);
                 currentStep.postValue(recipeSteps.getValue().get(currentStepIndex));
             }
-
         }
     }
 
@@ -132,6 +135,25 @@ public class RecipeActivityViewModel extends AndroidViewModel {
         }
 
         return isLastStep;
+    }
+
+    @NonNull
+    public LiveData<Boolean> isFirstStep() {
+        if(isFirstStep==null) {
+            isFirstStep = new MediatorLiveData<>();
+            isFirstStep.addSource(getCurrentStep(), new Observer<Step>() {
+                @Override
+                public void onChanged(@Nullable Step step) {
+                    if(step==null) {
+                        isFirstStep.postValue(isDisplayingIngredients() || !hasIngredients() && currentStepIndex == 0);
+                    } else {
+                        isFirstStep.postValue(false);
+                    }
+                }
+            });
+        }
+
+        return isFirstStep;
     }
 
     public LiveData<Recipe> getCurrentRecipe() {

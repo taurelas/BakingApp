@@ -38,6 +38,7 @@ public class RecipeActivity extends AppCompatActivity {
     private StepListFragment stepListFragment;
     private StepDetailFragment stepDetailFragment;
     private int recipeId;
+    private NavigationFragment navigationFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,16 +50,16 @@ public class RecipeActivity extends AppCompatActivity {
 
         // restoring fragments if needed, the fields remain null if not restored
         // also restoring recipeId
-        if(savedInstanceState!=null) {
+        if (savedInstanceState != null) {
             Timber.d("Restoring fragments");
             Fragment fragment = getSupportFragmentManager().getFragment(savedInstanceState, "Step");
-            if(fragment instanceof IngredientsFragment) {
+            if (fragment instanceof IngredientsFragment) {
                 ingredientsFragment = (IngredientsFragment) fragment;
-            } else if(fragment instanceof StepDetailFragment) {
+            } else if (fragment instanceof StepDetailFragment) {
                 stepDetailFragment = (StepDetailFragment) fragment;
             }
 
-            stepListFragment = (StepListFragment)getSupportFragmentManager().getFragment(savedInstanceState, "StepList");
+            stepListFragment = (StepListFragment) getSupportFragmentManager().getFragment(savedInstanceState, "StepList");
 
             recipeId = savedInstanceState.getInt(EXTRA_RECIPE_ID, INVALID_RECIPE_ID);
 
@@ -89,7 +90,7 @@ public class RecipeActivity extends AppCompatActivity {
         twoPanes = (view != null);
 
         // adding list of steps to a layout
-        if(stepListFragment==null) {
+        if (stepListFragment == null) {
             stepListFragment = new StepListFragment();
         }
 
@@ -114,20 +115,12 @@ public class RecipeActivity extends AppCompatActivity {
                 Timber.d("Displaying ingredients: Amount of stuff in the backstack: %s", getSupportFragmentManager().getBackStackEntryCount());
                 if (display != null) {
                     Timber.d("Displaying ingredients");
-                    if(ingredientsFragment==null) {
+                    if (ingredientsFragment == null) {
                         ingredientsFragment = new IngredientsFragment();
                         Bundle bundle = new Bundle();
                         bundle.putParcelableArray(IngredientsFragment.EXTRA_INGREDIENTS, display.toArray(new Ingredient[display.size()]));
                         ingredientsFragment.setArguments(bundle);
                     }
-
-
-                    //we only want 1 step in the back stack
-                    // so what, we remove all the steps?
-                   /* if(ingredientsFragment.isAdded()) {
-                        getSupportFragmentManager().popBackStackImmediate("Step", FragmentManager.POP_BACK_STACK_INCLUSIVE);
-                    }*/
-
 
                     // if we have two panes
                     if (twoPanes) {
@@ -139,14 +132,17 @@ public class RecipeActivity extends AppCompatActivity {
                         Timber.d("Adding to backstack ingredients fragment");
                         getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.step_list_container, ingredientsFragment)
-                                .addToBackStack("Step")
+                                //   .addToBackStack("Step")
+                                //.addToBackStack(null)
                                 .commit();
 
-                        NavigationFragment navigationFragment = new NavigationFragment();
-                        getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.bottom_navigation, navigationFragment, "NAV")
-                                .commit();
-                        Timber.d("Amount of steps in the backstack: %s", getSupportFragmentManager().getBackStackEntryCount());
+                        if (navigationFragment == null) {
+                            navigationFragment = new NavigationFragment();
+                            getSupportFragmentManager().beginTransaction()
+                                    .replace(R.id.bottom_navigation, navigationFragment, "NAV")
+                                    .commit();
+                            Timber.d("Amount of steps in the backstack: %s", getSupportFragmentManager().getBackStackEntryCount());
+                        }
                     }
                 } else {
                     Timber.d("Ingredients is null");
@@ -160,21 +156,15 @@ public class RecipeActivity extends AppCompatActivity {
             public void onChanged(@Nullable Step step) {
                 Timber.d("Step changed");
                 if (step != null) {
-                    if(stepDetailFragment==null) {
+                    if (stepDetailFragment == null) {
                         stepDetailFragment = new StepDetailFragment();
                     }
-
-                  /*  if(stepDetailFragment.isAdded()) {
-                        getSupportFragmentManager().popBackStackImmediate("Step", FragmentManager.POP_BACK_STACK_INCLUSIVE);
-                    }*/
-
-                    //we only want 1 step in the back stack
 
                     /*
                         With two panes, we want step details inside a container but we don't want it
                         in the backstack.
 
-                        With one pane, we want step dteails inside a container but we do want it in
+                        With one pane, we want step details inside a container but we do want it in
                         the backstack since it covers the whole screen.
                         With one pane, we also need navigation which should not affect the backstack
                      */
@@ -187,20 +177,22 @@ public class RecipeActivity extends AppCompatActivity {
                         Timber.d("Adding step %s to backstack a step", step.getId());
                         getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.step_list_container, stepDetailFragment)
-                                .addToBackStack("Step")
+                                //    .addToBackStack("Step")
+                                //.addToBackStack(null)
                                 .commit();
-                        NavigationFragment navigationFragment = new NavigationFragment();
-                        getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.bottom_navigation, navigationFragment, "NAV")
-                                .commit();
+                        if (navigationFragment == null) {
+                            navigationFragment = new NavigationFragment();
+                            getSupportFragmentManager().beginTransaction()
+                                    .replace(R.id.bottom_navigation, navigationFragment, "NAV")
+                                    .commit();
+
+                        }
 
                         Timber.d("Amount of steps in the backstack: %s", getSupportFragmentManager().getBackStackEntryCount());
                     }
                 }
             }
         });
-
-
     }
 
     @Override
@@ -210,12 +202,12 @@ public class RecipeActivity extends AppCompatActivity {
 
         outState.putInt(EXTRA_RECIPE_ID, recipeId);
 
-        if(ingredientsFragment==null) {
+        if (ingredientsFragment == null) {
             Timber.d("Saving instance state: ingredients is null");
         } else {
             getSupportFragmentManager().putFragment(outState, "Step", ingredientsFragment);
         }
-        if(stepListFragment==null) {
+        if (stepListFragment == null) {
             Timber.d("Saving instance state: List is null");
         } else {
             Timber.d("Saving instance state: List is not null!");
@@ -234,19 +226,22 @@ public class RecipeActivity extends AppCompatActivity {
         super.onBackPressed();
         Timber.d("On back pressed");
 
-        for(int i=0;i<getSupportFragmentManager().getBackStackEntryCount();i++) {
-            Timber.d("Stack entry: %s", getSupportFragmentManager().getBackStackEntryAt(i));
+       /* if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
+            getSupportFragmentManager().popBackStackImmediate("Step", FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        }*/
+
+        if (stepListFragment.isVisible()) {
+            Fragment fragment = getSupportFragmentManager().findFragmentByTag("NAV");
+
+            if (fragment != null) {
+                getSupportFragmentManager().beginTransaction()
+                        .remove(fragment)
+                        .commit();
+                navigationFragment = null;
+            } else {
+                Timber.d("Fragment is null");
+            }
         }
 
-
-        Fragment fragment = getSupportFragmentManager().findFragmentByTag("NAV");
-
-        if (fragment != null) {
-            getSupportFragmentManager().beginTransaction()
-                    .remove(fragment)
-                    .commit();
-        } else {
-            Timber.d("Fragment is null");
-        }
     }
 }
