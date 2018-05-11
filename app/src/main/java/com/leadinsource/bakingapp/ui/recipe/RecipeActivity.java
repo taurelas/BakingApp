@@ -115,6 +115,7 @@ public class RecipeActivity extends AppCompatActivity {
                 Timber.d("Displaying ingredients: Amount of stuff in the backstack: %s", getSupportFragmentManager().getBackStackEntryCount());
                 if (display != null) {
                     Timber.d("Displaying ingredients");
+                    stepListFragment = null;
                     if (ingredientsFragment == null) {
                         ingredientsFragment = new IngredientsFragment();
                         Bundle bundle = new Bundle();
@@ -154,11 +155,12 @@ public class RecipeActivity extends AppCompatActivity {
         viewModel.getCurrentStep().observe(this, new Observer<Step>() {
             @Override
             public void onChanged(@Nullable Step step) {
-                Timber.d("Step changed");
+                Timber.d("Step changed, displaying step");
+                stepListFragment = null;
                 if (step != null) {
-                    if (stepDetailFragment == null) {
+
                         stepDetailFragment = new StepDetailFragment();
-                    }
+
 
                     /*
                         With two panes, we want step details inside a container but we don't want it
@@ -230,7 +232,7 @@ public class RecipeActivity extends AppCompatActivity {
             getSupportFragmentManager().popBackStackImmediate("Step", FragmentManager.POP_BACK_STACK_INCLUSIVE);
         }*/
 
-        if (stepListFragment.isVisible()) {
+
             Fragment fragment = getSupportFragmentManager().findFragmentByTag("NAV");
 
             if (fragment != null) {
@@ -241,7 +243,7 @@ public class RecipeActivity extends AppCompatActivity {
             } else {
                 Timber.d("Fragment is null");
             }
-        }
+
 
     }
 }

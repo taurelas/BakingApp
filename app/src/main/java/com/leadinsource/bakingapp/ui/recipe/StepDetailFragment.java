@@ -10,6 +10,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.android.exoplayer2.DefaultLoadControl;
@@ -40,6 +41,7 @@ public class StepDetailFragment extends Fragment {
     private RecipeActivityViewModel viewModel;
     private TextView textView;
     private SimpleExoPlayerView playerView;
+    private ImageView imageView;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -53,11 +55,6 @@ public class StepDetailFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         viewModel = ViewModelProviders.of(getActivity()).get(RecipeActivityViewModel.class);
-
-   /*     if (getArguments().containsKey(EXTRA_STEP)) {
-            step = getArguments().getParcelable(EXTRA_STEP);
-            Timber.d("Creating Fragment for %s", step.getShortDescription());
-        }*/
     }
 
     @Override
@@ -67,6 +64,7 @@ public class StepDetailFragment extends Fragment {
 
         textView = rootView.findViewById(R.id.step_description);
         playerView = rootView.findViewById(R.id.playerView);
+        imageView  = rootView.findViewById(R.id.imageView);
 
         viewModel.getCurrentStep().observe(getActivity(), new Observer<Step>() {
             @Override
@@ -75,6 +73,10 @@ public class StepDetailFragment extends Fragment {
 
                     if(textView !=null) {
                         textView.setText(step.getDescription());
+                    }
+
+                    if(imageView!=null) {
+                        //imageView.setImageDrawable(step.getThumbnailURL()); PICASSO
                     }
 
                     if(playerView!=null) {
@@ -107,10 +109,18 @@ public class StepDetailFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        if (exoPlayer!=null) {
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        Timber.d("On Stop");
+        if (exoPlayer != null) {
+            exoPlayer.setPlayWhenReady(false);
             exoPlayer.stop();
             exoPlayer.release();
             exoPlayer = null;
         }
+
     }
 }
