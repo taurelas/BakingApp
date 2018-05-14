@@ -29,6 +29,10 @@ public class RecipeActivity extends AppCompatActivity {
 
     private static final String EXTRA_RECIPE_ID = "com.leadinsource.bakingapp.ui.recipe.recipe_id";
     public static final int INVALID_RECIPE_ID = -1;
+    public static final String NAVIGATION_TAG = "com.leadinsource.bakingapp.ui.recipe.navigation_tag";
+    public static final String NAVIGATION_KEY = "com.leadinsource.bakingapp.ui.recipe.navigation_key";
+    private static final String STEP_KEY = "com.leadinsource.bakingapp.ui.recipe.step_key";
+
     /**
      * indicates whether the screen displays two panes or one
      */
@@ -42,7 +46,7 @@ public class RecipeActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Timber.d("onCreate: Amount of stuff in the backstack: %s", getSupportFragmentManager().getBackStackEntryCount());
+        Timber.d("============== onCreate ============== ");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recipe);
 
@@ -51,18 +55,27 @@ public class RecipeActivity extends AppCompatActivity {
         // restoring fragments if needed, the fields remain null if not restored
         // also restoring recipeId
         if (savedInstanceState != null) {
+            //viewModel.restoreState(savedInstanceState);  // this would be ok
+
             Timber.d("Restoring fragments");
-            Fragment fragment = getSupportFragmentManager().getFragment(savedInstanceState, "Step");
+
+            Fragment fragment = getSupportFragmentManager().getFragment(savedInstanceState, STEP_KEY);
             if (fragment instanceof IngredientsFragment) {
                 ingredientsFragment = (IngredientsFragment) fragment;
             } else if (fragment instanceof StepDetailFragment) {
                 stepDetailFragment = (StepDetailFragment) fragment;
             }
 
+            fragment = getSupportFragmentManager().getFragment(savedInstanceState, NAVIGATION_KEY);
+            if(fragment!=null && fragment instanceof NavigationFragment) {
+                navigationFragment = (NavigationFragment) fragment;
+            }
+
+            Timber.d("Restoring list of recipe steps");
             stepListFragment = (StepListFragment) getSupportFragmentManager().getFragment(savedInstanceState, "StepList");
 
             recipeId = savedInstanceState.getInt(EXTRA_RECIPE_ID, INVALID_RECIPE_ID);
-
+// ----------------- lets try and avoid the top save for viewmodel.restoreState
         } else {
             Timber.d("Creating fresh fragments");
             Intent intent = getIntent();
@@ -91,6 +104,7 @@ public class RecipeActivity extends AppCompatActivity {
 
         // adding list of steps to a layout
         if (stepListFragment == null) {
+            Timber.d("Creating new StepListFragment");
             stepListFragment = new StepListFragment();
         }
 
@@ -127,20 +141,17 @@ public class RecipeActivity extends AppCompatActivity {
                     if (twoPanes) {
                         getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.step_detail_container, ingredientsFragment)
-                            /*    .addToBackStack("Step") */
                                 .commit();
                     } else {
                         Timber.d("Adding to backstack ingredients fragment");
                         getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.step_list_container, ingredientsFragment)
-                                //   .addToBackStack("Step")
-                                //.addToBackStack(null)
                                 .commit();
 
                         if (navigationFragment == null) {
                             navigationFragment = new NavigationFragment();
                             getSupportFragmentManager().beginTransaction()
-                                    .replace(R.id.bottom_navigation, navigationFragment, "NAV")
+                                    .replace(R.id.bottom_navigation, navigationFragment, NAVIGATION_TAG)
                                     .commit();
                             Timber.d("Amount of steps in the backstack: %s", getSupportFragmentManager().getBackStackEntryCount());
                         }
@@ -151,16 +162,14 @@ public class RecipeActivity extends AppCompatActivity {
             }
         });
 
-
         viewModel.getCurrentStep().observe(this, new Observer<Step>() {
             @Override
             public void onChanged(@Nullable Step step) {
                 Timber.d("Step changed, displaying step");
-                stepListFragment = null;
                 if (step != null) {
-
-                        stepDetailFragment = new StepDetailFragment();
-
+                    stepListFragment = null;
+                    Timber.d("Step is not null so creating a stepDetailFragment fragment and replacing");
+                    stepDetailFragment = new StepDetailFragment();
 
                     /*
                         With two panes, we want step details inside a container but we don't want it
@@ -173,24 +182,18 @@ public class RecipeActivity extends AppCompatActivity {
                     if (twoPanes) {
                         getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.step_detail_container, stepDetailFragment)
-                            /*    .addToBackStack("Step") */
                                 .commit();
                     } else {
-                        Timber.d("Adding step %s to backstack a step", step.getId());
                         getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.step_list_container, stepDetailFragment)
-                                //    .addToBackStack("Step")
-                                //.addToBackStack(null)
                                 .commit();
                         if (navigationFragment == null) {
                             navigationFragment = new NavigationFragment();
                             getSupportFragmentManager().beginTransaction()
-                                    .replace(R.id.bottom_navigation, navigationFragment, "NAV")
+                                    .replace(R.id.bottom_navigation, navigationFragment, NAVIGATION_TAG)
                                     .commit();
 
                         }
-
-                        Timber.d("Amount of steps in the backstack: %s", getSupportFragmentManager().getBackStackEntryCount());
                     }
                 }
             }
@@ -201,19 +204,43 @@ public class RecipeActivity extends AppCompatActivity {
     protected void onSaveInstanceState(Bundle outState) {
         Timber.d("On save instance state by activity");
         super.onSaveInstanceState(outState);
-
+        // here we go, we need to save the state of the activity so the viewmodel can restore it
         outState.putInt(EXTRA_RECIPE_ID, recipeId);
+
+        // now we add fragments and we want to avoid it
 
         if (ingredientsFragment == null) {
             Timber.d("Saving instance state: ingredients is null");
         } else {
-            getSupportFragmentManager().putFragment(outState, "Step", ingredientsFragment);
+            if(ingredientsFragment.isAdded()) {
+                getSupportFragmentManager().putFragment(outState, STEP_KEY, ingredientsFragment);
+            }
         }
         if (stepListFragment == null) {
             Timber.d("Saving instance state: List is null");
         } else {
             Timber.d("Saving instance state: List is not null!");
-            getSupportFragmentManager().putFragment(outState, "StepList", stepListFragment);
+            if(stepListFragment.isAdded()) {
+                getSupportFragmentManager().putFragment(outState, "StepList", stepListFragment);
+            }
+        }
+
+        if(navigationFragment == null) {
+            Timber.d("Navigation instance state: fragment is null");
+        } else {
+            Timber.d("Navigation instance state: fragment is not null");
+            if(navigationFragment.isAdded()) {
+                getSupportFragmentManager().putFragment(outState, NAVIGATION_KEY, navigationFragment);
+            }
+        }
+
+        if(stepDetailFragment == null) {
+            Timber.d("Step detail instance state: fragment is null");
+        } else {
+            Timber.d("Step detail instance state: fragment is not null");
+            if(stepDetailFragment.isAdded()) {
+                getSupportFragmentManager().putFragment(outState, STEP_KEY, stepDetailFragment);
+            }
         }
     }
 
@@ -221,6 +248,52 @@ public class RecipeActivity extends AppCompatActivity {
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         Timber.d("On restore instance state");
         super.onRestoreInstanceState(savedInstanceState);
+
+        // here is slightly different scenario because the state of the activity is different - viewmodel is gone
+        // but in reality the only thing different is viewmodel's state, it should not affect the activity
+
+        //viewmodel.restore(savedInstanceState);
+
+        if(ingredientsFragment!=null) {
+            // if we have two panes
+            if (twoPanes) {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.step_detail_container, ingredientsFragment)
+                        .commit();
+            } else {
+                Timber.d("Adding to backstack ingredients fragment");
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.step_list_container, ingredientsFragment)
+                        .commit();
+
+                if (navigationFragment == null) {
+                    navigationFragment = new NavigationFragment();
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.bottom_navigation, navigationFragment, NAVIGATION_TAG)
+                            .commit();
+                    Timber.d("Amount of steps in the backstack: %s", getSupportFragmentManager().getBackStackEntryCount());
+                }
+            }
+        }
+        if(stepDetailFragment!=null) {
+            if (twoPanes) {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.step_detail_container, stepDetailFragment)
+                        .commit();
+            } else {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.step_list_container, stepDetailFragment)
+                        .commit();
+                if (navigationFragment == null) {
+                    navigationFragment = new NavigationFragment();
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.bottom_navigation, navigationFragment, NAVIGATION_TAG)
+                            .commit();
+
+                }
+            }
+        }
+
     }
 
     @Override
@@ -228,22 +301,15 @@ public class RecipeActivity extends AppCompatActivity {
         super.onBackPressed();
         Timber.d("On back pressed");
 
-       /* if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
-            getSupportFragmentManager().popBackStackImmediate("Step", FragmentManager.POP_BACK_STACK_INCLUSIVE);
-        }*/
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(NAVIGATION_TAG);
 
-
-            Fragment fragment = getSupportFragmentManager().findFragmentByTag("NAV");
-
-            if (fragment != null) {
-                getSupportFragmentManager().beginTransaction()
-                        .remove(fragment)
-                        .commit();
-                navigationFragment = null;
-            } else {
-                Timber.d("Fragment is null");
-            }
-
-
+        if (fragment != null) {
+            getSupportFragmentManager().beginTransaction()
+                    .remove(fragment)
+                    .commit();
+            navigationFragment = null;
+        } else {
+            Timber.d("Fragment is null");
+        }
     }
 }

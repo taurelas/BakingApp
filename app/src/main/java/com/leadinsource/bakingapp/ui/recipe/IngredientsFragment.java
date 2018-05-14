@@ -1,7 +1,9 @@
 package com.leadinsource.bakingapp.ui.recipe;
 
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,12 +33,26 @@ public class IngredientsFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (getArguments().containsKey(EXTRA_INGREDIENTS)) {
-            ingredients = (Ingredient[]) getArguments().getParcelableArray(EXTRA_INGREDIENTS);
-
+        if (savedInstanceState==null && getArguments().containsKey(EXTRA_INGREDIENTS)) {
+            Parcelable[] parcelables = getArguments().getParcelableArray(EXTRA_INGREDIENTS);
+            ingredients = new Ingredient[parcelables.length];
+            for(int i=0; i<parcelables.length;i++) {
+                ingredients[i] = (Ingredient) parcelables[i];
+            }
         }
     }
 
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        if(savedInstanceState!=null) {
+            Parcelable[] parcelables = getArguments().getParcelableArray(EXTRA_INGREDIENTS);
+            ingredients = new Ingredient[parcelables.length];
+            for(int i=0; i<parcelables.length;i++) {
+                ingredients[i] = (Ingredient) parcelables[i];
+            }
+        }
+    }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
@@ -60,5 +76,11 @@ public class IngredientsFragment extends Fragment {
         }
 
         return rootView;
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelableArray( EXTRA_INGREDIENTS, ingredients);
     }
 }
