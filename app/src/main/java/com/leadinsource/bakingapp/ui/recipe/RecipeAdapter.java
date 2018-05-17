@@ -80,7 +80,7 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         if (data == null || data.getSteps() == null) {
             return 0;
         } else {
-            return data.getSteps().length;
+            return data.getSteps().length+1; // ingredients gives +1
         }
 
     }

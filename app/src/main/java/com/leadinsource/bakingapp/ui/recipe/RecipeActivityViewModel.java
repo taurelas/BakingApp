@@ -48,6 +48,7 @@ public class RecipeActivityViewModel extends AndroidViewModel {
     private int currentStepIndex;
     private MutableLiveData<Integer> currentStepIndexLiveData = new MutableLiveData<>();
     private int lastStepIndex;
+    private MediatorLiveData<Integer> lastStepIndexLiveData = new MediatorLiveData<>();
 
     public RecipeActivityViewModel(Application application) {
         super(application);
@@ -59,6 +60,15 @@ public class RecipeActivityViewModel extends AndroidViewModel {
             public void onChanged(@Nullable List<Recipe> changedRecipes) {
                 if (changedRecipes != null) {
                     recipes.postValue(changedRecipes);
+                }
+            }
+        });
+
+        lastStepIndexLiveData.addSource(recipeSteps, new Observer<List<Step>>() {
+            @Override
+            public void onChanged(@Nullable List<Step> steps) {
+                if(steps!=null) {
+                    lastStepIndexLiveData.postValue(steps.size()-1);
                 }
             }
         });
@@ -229,7 +239,10 @@ public class RecipeActivityViewModel extends AndroidViewModel {
             isLastStep.addSource(getCurrentStep(), new Observer<Step>() {
                 @Override
                 public void onChanged(@Nullable Step step) {
+                    Timber.d("SAVINGSTEP step has changed");
                     if (step == null) return;
+                    Timber.d("SAVINGSTEP step is not null but current is %s, last is %s", currentStepIndex, lastStepIndex);
+
                     if (currentStepIndex == lastStepIndex) {
                         isLastStep.setValue(true);
                     } else {
@@ -300,8 +313,6 @@ public class RecipeActivityViewModel extends AndroidViewModel {
 
 
     // saving and restoring state
-
-
     public void restoreState(Bundle savedInstanceState) {
         Timber.d("restoring state of the ViewModel");
         int recipeId = savedInstanceState.getInt(EXTRA_RECIPE_ID);
@@ -315,7 +326,6 @@ public class RecipeActivityViewModel extends AndroidViewModel {
                 } else {
                     Timber.d("Displaying ingredients: which are null");
                 }
-
 
             } else {
                 Timber.d("Not displaying ingredients");
@@ -331,6 +341,7 @@ public class RecipeActivityViewModel extends AndroidViewModel {
             int index = savedInstanceState.getInt(CURRENT_STEP_KEY, -1);
             if(index>-1) {
                 currentStepIndexLiveData.postValue(index);
+                currentStepIndex = index;
                 Timber.d("SAVINGSTEP Posting value %s", index);
             }
         }
