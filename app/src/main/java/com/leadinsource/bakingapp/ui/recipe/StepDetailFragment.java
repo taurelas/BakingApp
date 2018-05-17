@@ -32,13 +32,10 @@ import timber.log.Timber;
 
 /**
  * A fragment representing a single Step detail screen.
-
  */
 public class StepDetailFragment extends Fragment {
 
-    private static final String PLAYER_POSITION_KEY = "player_position_key";
-
-    private Step step;
+    private Step recentStep;
     private SimpleExoPlayer exoPlayer;
     private RecipeActivityViewModel viewModel;
     private TextView textView;
@@ -51,57 +48,45 @@ public class StepDetailFragment extends Fragment {
      * fragment (e.g. upon screen orientation changes).
      */
     public StepDetailFragment() {
+
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        Timber.d("onCreate of StepDetailFragment %s", this);
         viewModel = ViewModelProviders.of(getActivity()).get(RecipeActivityViewModel.class);
-        Timber.d("SAVINGPOSITION onCreate in Fragment %s", this);
-        if(savedInstanceState!=null && savedInstanceState.containsKey(PLAYER_POSITION_KEY)) {
-            Timber.d("SAVINGPOSITION savedInstanceState is not null and has a key");
-            playerPosition = savedInstanceState.getLong(PLAYER_POSITION_KEY, 0L);
-        }
+        playerPosition = viewModel.getTime();
     }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        Timber.d("SAVINGPOSITION onCreateView");
+        Timber.d("ROTATION onCreateView");
         View rootView = inflater.inflate(R.layout.step, container, false);
 
         textView = rootView.findViewById(R.id.step_description);
         playerView = rootView.findViewById(R.id.playerView);
-        imageView  = rootView.findViewById(R.id.imageView);
+        imageView = rootView.findViewById(R.id.imageView);
 
         viewModel.getCurrentStep().observe(getActivity(), new Observer<Step>() {
             @Override
             public void onChanged(@Nullable Step step) {
+                Timber.d("Step changed");
+                recentStep = step;
                 if (step != null) {
 
-                    if(textView !=null) {
+                    if (textView != null) {
                         textView.setText(step.getDescription());
                     }
 
-                    if(imageView!=null) {
+                    if (imageView != null) {
                         //imageView.setImageDrawable(step.getThumbnailURL()); TODO PICASSO
                     }
 
-                    if(playerView!=null) {
-                        if(step.getVideoURL()!=null && step.getVideoURL().length()>0 && getContext()!=null) {
-                            TrackSelector trackSelector = new DefaultTrackSelector();
-                            LoadControl loadControl = new DefaultLoadControl();
-                            exoPlayer = ExoPlayerFactory.newSimpleInstance(getContext(), trackSelector, loadControl);
-                            playerView.setPlayer(exoPlayer);
-                            Uri videoUrl = Uri.parse(step.getVideoURL());
-                            String userAgent = Util.getUserAgent(getContext(), "BakingApp");
-                            MediaSource mediaSource = new ExtractorMediaSource(videoUrl, new DefaultDataSourceFactory(
-                                    getContext(), userAgent), new DefaultExtractorsFactory(), null, null);
-                            exoPlayer.prepare(mediaSource);
-                            exoPlayer.seekTo(playerPosition);
-                            Timber.d("SAVINGPOSITION step changed: Seeking to %s", playerPosition);
-                            exoPlayer.setPlayWhenReady(true);
+                    if (playerView != null) {
+                        if (step.getVideoURL() != null && step.getVideoURL().length() > 0 && getContext() != null) {
+                            initializePlayer(step);
                         } else {
                             playerView.setVisibility(View.GONE);
                             Timber.d("Setting visibility to gone");
@@ -117,46 +102,55 @@ public class StepDetailFragment extends Fragment {
         return rootView;
     }
 
-    @Override
-    public void onPause() {
-        Timber.d("SAVINGPOSITION onPause player position is %s", playerPosition);
-        super.onPause();
+    private void initializePlayer(Step step) {
+        Timber.d("initialize player, position is %s", playerPosition);
+        TrackSelector trackSelector = new DefaultTrackSelector();
+        LoadControl loadControl = new DefaultLoadControl();
+        exoPlayer = ExoPlayerFactory.newSimpleInstance(getContext(), trackSelector, loadControl);
+        playerView.setPlayer(exoPlayer);
+        Uri videoUrl = Uri.parse(step.getVideoURL());
+        String userAgent = Util.getUserAgent(getContext(), "BakingApp");
+        MediaSource mediaSource = new ExtractorMediaSource(videoUrl, new DefaultDataSourceFactory(
+                getContext(), userAgent), new DefaultExtractorsFactory(), null, null);
+        exoPlayer.prepare(mediaSource);
+        exoPlayer.seekTo(viewModel.getTime());
+        // back to default time
+        viewModel.setCurrentTime(0L);
+        exoPlayer.setPlayWhenReady(true);
     }
 
     @Override
-    public void onStop() {
-        super.onStop();
-        Timber.d("SAVINGPOSITION On Stop");
+    public void onPause() {
+        super.onPause();
+        if(exoPlayer!=null) {
+            playerPosition = exoPlayer.getCurrentPosition();
+        }
+        releasePlayer();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if(recentStep!=null && exoPlayer==null) {
+            initializePlayer(recentStep);
+        }
+    }
+
+    private void releasePlayer() {
+        Timber.d("Releasing the player");
         if (exoPlayer != null) {
             exoPlayer.setPlayWhenReady(false);
             exoPlayer.stop();
             exoPlayer.release();
             exoPlayer = null;
         }
-
-    }
-
-    @Override
-    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
-        super.onViewStateRestored(savedInstanceState);
     }
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        long position;
-
-        if(exoPlayer!=null) {
-            position = exoPlayer.getCurrentPosition();
-            outState.putLong("player_position_key", position);
-            Timber.d("SAVINGPOSITION %s goes to bundle", position);
-        }
-
-    }
-
-    @Override
-    public void onResume() {
-        Timber.d("SAVINGPOSITION onResume player position is %s", playerPosition);
-        super.onResume();
+        // saving playerPosition
+        Timber.d("Saving player position: %s", playerPosition);
+        viewModel.setCurrentTime(playerPosition);
     }
 }

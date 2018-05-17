@@ -29,9 +29,9 @@ public class RecipeActivity extends AppCompatActivity {
     public static final String EXTRA_RECIPE_ID = "com.leadinsource.bakingapp.ui.recipe.recipe_id";
     public static final int INVALID_RECIPE_ID = -1;
     public static final String NAVIGATION_TAG = "com.leadinsource.bakingapp.ui.recipe.navigation_tag";
-    public static final String NAVIGATION_KEY = "com.leadinsource.bakingapp.ui.recipe.navigation_key";
     private static final String STEP_DETAIL_KEY = "com.leadinsource.bakingapp.ui.recipe.step_key";
-    private static final String DISPLAY_INGREDIENTS = "display_ingredient_key";
+    public static final String STEP_TAG = "com.leadinsource.bakingapp.ui.recipe.step_tag";
+    private static final String STEP_LIST_KEY = "com.leadinsource.bakingapp.ui.recipe.step_list_key";
 
     /**
      * indicates whether the screen displays two panes or one
@@ -41,36 +41,21 @@ public class RecipeActivity extends AppCompatActivity {
     private IngredientsFragment ingredientsFragment;
     private StepListFragment stepListFragment;
     private StepDetailFragment stepDetailFragment;
-    private StepDetailFragment oldStepDetailFragment;
     private int recipeId;
     private NavigationFragment navigationFragment;
     private RecipeActivityViewModel viewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Timber.d("SAVINGPOSITION ============== onCreate ============== ");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recipe);
-        Timber.d("SAVINGPOSITION after setContentView ");
         viewModel = ViewModelProviders.of(this).get(RecipeActivityViewModel.class);
-        Timber.d("SAVINGPOSITION after viewModel ");
-        // restoring fragments if needed, the fields remain null if not restored
-        // also restoring recipeId
+
         if (savedInstanceState != null) {
-            //viewModel.restoreState(savedInstanceState);  // this would be ok
-            Timber.d("SAVINGPOSITION Restoring fragments");
-
-            // this is the only fragment we are restoring from the original state, the rest is going
-            // to be recreated anew
-
-            Timber.d("Restoring list of recipe steps and the state of recyclerview also");
-            stepListFragment = (StepListFragment) getSupportFragmentManager().getFragment(savedInstanceState, "StepList");
-            oldStepDetailFragment = (StepDetailFragment) getSupportFragmentManager().getFragment(savedInstanceState, STEP_DETAIL_KEY);
+            // restoring list fragment and its state
+            stepListFragment = (StepListFragment) getSupportFragmentManager().getFragment(savedInstanceState, STEP_LIST_KEY);
             recipeId = savedInstanceState.getInt(EXTRA_RECIPE_ID, INVALID_RECIPE_ID);
-            //viewModel.restoreState(savedInstanceState);
-// ----------------- lets try and avoid the top save for viewmodel.restoreState
         } else {
-            Timber.d("Creating fresh fragments");
             Intent intent = getIntent();
             // finish if no intent, the activity without is useless
             if (intent == null) {
@@ -106,7 +91,7 @@ public class RecipeActivity extends AppCompatActivity {
                 .replace(R.id.step_list_container, stepListFragment)
                 .commit();
 
-        // adding title when required
+        // observing recipe to add title when required
         viewModel.getCurrentRecipe().observe(this, new Observer<Recipe>() {
             @Override
             public void onChanged(@Nullable Recipe recipe) {
@@ -126,16 +111,12 @@ public class RecipeActivity extends AppCompatActivity {
             @Override
             public void onChanged(@Nullable List<Ingredient> display) {
                 if (display != null) {
-                    Timber.d("Displaying ingredients with size %s", display.size());
                     stepListFragment = null;
                     if (ingredientsFragment == null) {
-                        Timber.d("Creating ingredients fragment");
                         ingredientsFragment = new IngredientsFragment();
                         Bundle bundle = new Bundle();
                         bundle.putParcelableArray(IngredientsFragment.EXTRA_INGREDIENTS, display.toArray(new Ingredient[display.size()]));
                         ingredientsFragment.setArguments(bundle);
-                    } else {
-                        Timber.d("Fragment already exists");
                     }
 
                     // if we have two panes
@@ -144,7 +125,6 @@ public class RecipeActivity extends AppCompatActivity {
                                 .replace(R.id.step_detail_container, ingredientsFragment)
                                 .commit();
                     } else {
-                        Timber.d("Adding to backstack ingredients fragment");
                         getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.step_list_container, ingredientsFragment)
                                 .commit();
@@ -154,11 +134,8 @@ public class RecipeActivity extends AppCompatActivity {
                             getSupportFragmentManager().beginTransaction()
                                     .replace(R.id.bottom_navigation, navigationFragment, NAVIGATION_TAG)
                                     .commit();
-                            Timber.d("Amount of steps in the backstack: %s", getSupportFragmentManager().getBackStackEntryCount());
                         }
                     }
-                } else {
-                    Timber.d("Ingredients is null");
                 }
             }
         });
@@ -170,29 +147,28 @@ public class RecipeActivity extends AppCompatActivity {
         viewModel.getCurrentStep().observe(this, new Observer<Step>() {
             @Override
             public void onChanged(@Nullable Step step) {
-                Timber.d("Step changed, displaying step");
+                Timber.d("ROTATION New step detected");
                 if (step != null) {
+                    Timber.d("ROTATION The step is not null");
                     stepListFragment = null;
-                    Timber.d("SAVINGPOSITION Step is not null so creating a stepDetailFragment fragment and replacing");
-                    if(oldStepDetailFragment!=null) {
-                        stepDetailFragment = oldStepDetailFragment;
-                        //oldStepDetailFragment = null;
+                    stepDetailFragment = (StepDetailFragment) getSupportFragmentManager().findFragmentByTag(STEP_TAG);
+                    if(stepDetailFragment!=null) {
+                        Timber.d("ROTATION well well well, there was something existing");
                     } else {
-                        Timber.d("SAVINGPOSITION Creating new detail Fragment");
+                        Timber.d("ROTATION Creating new stepDetailFragment");
                         stepDetailFragment = new StepDetailFragment();
                     }
 
-                    /*
-                        With two panes, we want step details inside a container but we don't want it
+
+                     /* With two panes, we want step details inside a container but we don't want it
                         in the backstack.
 
                         With one pane, we want step details inside a container but we do want it in
                         the backstack since it covers the whole screen.
-                        With one pane, we also need navigation which should not affect the backstack
-                     */
+                        With one pane, we also need navigation which should not affect the backstack */
                     if (twoPanes) {
                         getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.step_detail_container, stepDetailFragment)
+                                .replace(R.id.step_detail_container, stepDetailFragment, STEP_TAG)
                                 .commit();
                     } else {
                         getSupportFragmentManager().beginTransaction()
@@ -224,20 +200,20 @@ public class RecipeActivity extends AppCompatActivity {
             Timber.d("Saving instance state: List is null");
         } else {
             Timber.d("Saving instance state: List is not null!");
-            if(stepListFragment.isAdded()) {
-                getSupportFragmentManager().putFragment(outState, "StepList", stepListFragment);
+            if (stepListFragment.isAdded()) {
+                getSupportFragmentManager().putFragment(outState, STEP_LIST_KEY, stepListFragment);
             }
         }
 
-        if(stepDetailFragment == null) {
+        if (stepDetailFragment == null) {
             Timber.d("Step detail instance state: fragment is null");
         } else {
             Timber.d("Step detail instance state: fragment is not null");
-            if(stepDetailFragment.isAdded()) {
+            if (stepDetailFragment.isAdded()) {
                 getSupportFragmentManager().putFragment(outState, STEP_DETAIL_KEY, stepDetailFragment);
             }
         }
-       }
+    }
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {

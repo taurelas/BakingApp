@@ -31,9 +31,11 @@ import static com.leadinsource.bakingapp.ui.recipe.RecipeActivity.EXTRA_RECIPE_I
 public class RecipeActivityViewModel extends AndroidViewModel {
     private static final String DISPLAY_INGREDIENTS_KEY = "display_ingredients_key";
     private static final String CURRENT_STEP_KEY = "current_step_key";
+    private static final String CURRENT_TIME_KEY = "current_time_key";
 
     private MediatorLiveData<List<Step>> recipeSteps;
     private MediatorLiveData<Boolean> isLastStep;
+    private long time = 0;
     private MediatorLiveData<Boolean> isFirstStep;
     private MediatorLiveData<Recipe> currentRecipe = new MediatorLiveData<>();
     private MediatorLiveData<Step> currentStep = new MediatorLiveData<>();
@@ -347,6 +349,11 @@ public class RecipeActivityViewModel extends AndroidViewModel {
             }
         }
 
+        if(savedInstanceState.containsKey(CURRENT_TIME_KEY)) {
+            Timber.d("SAVINGPOSITION Contains key");
+            time = savedInstanceState.getLong(CURRENT_TIME_KEY, 0);
+        }
+
     }
 
     public Bundle saveState(Bundle outState) {
@@ -359,6 +366,19 @@ public class RecipeActivityViewModel extends AndroidViewModel {
             Timber.d("SAVINGSTEP Saving step index %s,", currentStepIndex);
         }
 
+        if(time!=0L) {
+            outState.putLong(CURRENT_TIME_KEY, time);
+            Timber.d("SAVINGPOSITION because time is not 0 but %s", time);
+        }
+
         return outState;
+    }
+
+    public void setCurrentTime(long time) {
+        this.time = time;
+    }
+
+    public long getTime() {
+        return time;
     }
 }
