@@ -6,7 +6,6 @@ import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MediatorLiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.Observer;
-import android.arch.lifecycle.Transformations;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -271,9 +270,6 @@ public class RecipeActivityViewModel extends AndroidViewModel {
         currentRecipeId.postValue(recipeId);
     }
 
-
-
-
     private boolean isDisplayingIngredients() {
         if (displayIngredients == null) {
             return false;
@@ -334,10 +330,11 @@ public class RecipeActivityViewModel extends AndroidViewModel {
             Timber.d("SAVINGSTEP Contains key");
             int index = savedInstanceState.getInt(CURRENT_STEP_KEY, -1);
             if(index>-1) {
-                currentStep
+                currentStepIndexLiveData.postValue(index);
+                Timber.d("SAVINGSTEP Posting value %s", index);
             }
         }
-        // we check as above for CURRENT_STEP_KEY and perhaps we get the 
+
     }
 
     public Bundle saveState(Bundle outState) {
