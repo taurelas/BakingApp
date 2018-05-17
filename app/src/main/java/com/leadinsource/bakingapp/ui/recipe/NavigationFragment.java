@@ -1,4 +1,4 @@
-package com.leadinsource.bakingapp;
+package com.leadinsource.bakingapp.ui.recipe;
 
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
@@ -11,7 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
-import com.leadinsource.bakingapp.ui.recipe.RecipeActivityViewModel;
+import com.leadinsource.bakingapp.R;
 
 import timber.log.Timber;
 
@@ -67,11 +67,16 @@ public class NavigationFragment extends Fragment {
         }
 
 
-        if(viewModel.isFirst()) {
-
-            previousButton.setVisibility(View.INVISIBLE);
-        }
-
+        viewModel.isFirstStep().observe(getActivity(), new Observer<Boolean>() {
+            @Override
+            public void onChanged(@Nullable Boolean isFirst) {
+                if(isFirst) {
+                    previousButton.setVisibility(View.INVISIBLE);
+                } else {
+                    previousButton.setVisibility(View.VISIBLE);
+                }
+            }
+        });
 
         viewModel.isLastStep().observe(getActivity(), new Observer<Boolean>() {
             @Override

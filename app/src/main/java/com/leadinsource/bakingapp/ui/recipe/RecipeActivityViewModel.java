@@ -6,6 +6,7 @@ import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MediatorLiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.Observer;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -20,26 +21,37 @@ import java.util.List;
 
 import timber.log.Timber;
 
+import static com.leadinsource.bakingapp.ui.recipe.RecipeActivity.EXTRA_RECIPE_ID;
+
 /**
  * View Model for Recipe Activity, handles in particular the navigation buttons by providing
  * isFirst(), isLast() & moveToNext()
  */
 
 public class RecipeActivityViewModel extends AndroidViewModel {
+    private static final String DISPLAY_INGREDIENTS_KEY = "display_ingredients_key";
+    private static final String CURRENT_STEP_KEY = "current_step_key";
+    private static final String CURRENT_TIME_KEY = "current_time_key";
+
     private MediatorLiveData<List<Step>> recipeSteps;
     private MediatorLiveData<Boolean> isLastStep;
-    private MediatorLiveData<Recipe> currentRecipe;
-    private MutableLiveData<Step> currentStep;
+    private long time = 0;
+    private MediatorLiveData<Boolean> isFirstStep;
+    private MediatorLiveData<Recipe> currentRecipe = new MediatorLiveData<>();
+    private MediatorLiveData<Step> currentStep = new MediatorLiveData<>();
     @NonNull
-    private MutableLiveData<List<Ingredient>> displayedIngredients = new MutableLiveData<>();
+    private MediatorLiveData<List<Ingredient>> displayedIngredients = new MediatorLiveData<>();
+    private MutableLiveData<Boolean> displayIngredients = new MutableLiveData<>();
     private MutableLiveData<Integer> currentRecipeId;
-    private List<Recipe> recipes;
+    private MutableLiveData<List<Recipe>> recipes = new MutableLiveData<>();
     private List<Ingredient> ingredients = new ArrayList<>();
     private Repository repo;
 
     // indices tracking for navigation
     private int currentStepIndex;
+    private MutableLiveData<Integer> currentStepIndexLiveData = new MutableLiveData<>();
     private int lastStepIndex;
+    private MediatorLiveData<Integer> lastStepIndexLiveData = new MediatorLiveData<>();
 
     public RecipeActivityViewModel(Application application) {
         super(application);
@@ -50,23 +62,135 @@ public class RecipeActivityViewModel extends AndroidViewModel {
             @Override
             public void onChanged(@Nullable List<Recipe> changedRecipes) {
                 if (changedRecipes != null) {
-                    recipes = changedRecipes;
+                    recipes.postValue(changedRecipes);
+                }
+            }
+        });
+
+        lastStepIndexLiveData.addSource(recipeSteps, new Observer<List<Step>>() {
+            @Override
+            public void onChanged(@Nullable List<Step> steps) {
+                if(steps!=null) {
+                    lastStepIndexLiveData.postValue(steps.size()-1);
                 }
             }
         });
 
         //we need to track the current recipe and step
         currentRecipeId = new MutableLiveData<>();
-
+        displayIngredients.setValue(false);
         recipeSteps = new MediatorLiveData<>();
 
-        currentStep = new MutableLiveData<>();
         currentStep.setValue(null);
+
+        currentStep.addSource(currentStepIndexLiveData, new Observer<Integer>() {
+            @Override
+            public void onChanged(@Nullable Integer integer) {
+                if(integer!=null && recipeSteps!=null && recipeSteps.getValue()!=null) {
+                    currentStep.postValue(recipeSteps.getValue().get(integer));
+                }
+            }
+        });
+
+        currentStep.addSource(recipeSteps, new Observer<List<Step>>() {
+            @Override
+            public void onChanged(@Nullable List<Step> steps) {
+                if(steps!=null && currentStepIndexLiveData!=null && currentStepIndexLiveData.getValue()!=null) {
+                    currentStep.postValue(recipeSteps.getValue().get(currentStepIndexLiveData.getValue()));
+                }
+            }
+        });
+
+        currentRecipe.addSource(currentRecipeId, new Observer<Integer>() {
+            @Override
+            public void onChanged(@Nullable Integer id) {
+                if (id != null && recipes != null && recipes.getValue() !=null) {
+                    Timber.d("Recipe id has changed");
+                    Recipe recipe = getRecipeById(id, recipes.getValue());
+                    currentRecipe.postValue(recipe);
+                    recipeSteps.postValue(Arrays.asList(recipe.getSteps()));
+                    lastStepIndex = recipe.steps.length - 1;
+                }
+            }
+        });
+
+        currentRecipe.addSource(recipes, new Observer<List<Recipe>>() {
+            @Override
+            public void onChanged(@Nullable List<Recipe> recipes) {
+                if (recipes != null && currentRecipeId != null && currentRecipeId.getValue()!=null) {
+                    Timber.d("List of recipes has changed");
+                    Recipe recipe = getRecipeById(currentRecipeId.getValue(), recipes);
+                    currentRecipe.postValue(recipe);
+                    recipeSteps.postValue(Arrays.asList(recipe.getSteps()));
+                    lastStepIndex = recipe.steps.length - 1;
+                }
+            }
+        });
+
+        //each time recipe changes, ingredients change
+
+        currentRecipe.observeForever(new Observer<Recipe>() {
+            @Override
+            public void onChanged(@Nullable Recipe recipe) {
+                if (recipe != null) {
+                    Timber.d("Current recipe has changed so changing ingredients to size %s", recipe.ingredients.length);
+                    ingredients = Arrays.asList(recipe.ingredients);
+                    if(displayIngredients.getValue()!= null && displayIngredients.getValue()) {
+                        displayedIngredients.postValue(ingredients);
+                    }
+                } else {
+                    Timber.d("But the recipe is null so it's not great");
+                }
+            }
+        });
+
+
+        displayedIngredients.addSource(displayIngredients, new Observer<Boolean>() {
+            @Override
+            public void onChanged(@Nullable Boolean displayIngredients) {
+                Timber.d("Display ingredients boolean changed");
+                if (displayIngredients != null) {
+                    if (displayIngredients) {
+                        Timber.d("Posting ingredients");
+                        displayedIngredients.postValue(ingredients);
+                    } else {
+                        Timber.d("Posting null");
+                        displayedIngredients.postValue(null);
+                    }
+                } else {
+                    Timber.d("Display ingredients is null");
+                }
+            }
+        });
+
+    }
+
+    // utility method to determine which id holds the value
+    private Recipe getRecipeById(@Nullable Integer id, @Nullable List<Recipe> recipes) {
+
+        if (recipes!=null && id!=null) {
+            for (Recipe recipe : recipes) {
+                int idFromString = Integer.valueOf(recipe.getId());
+                if (recipe.uid == id || idFromString == id) {
+                    return recipe;
+                }
+            }
+        }
+
+        return new Recipe();
+    }
+
+    public void showIngredients() {
+        displayIngredients.postValue(true);
+    }
+
+    public void hideIngredients() {
+        displayIngredients.postValue(false);
     }
 
     public void setCurrentStep(Step step) {
         Timber.d("Setting current step %s", step);
-        displayedIngredients.setValue(null);
+        hideIngredients();
         currentStep.postValue(step);
         currentStepIndex = Integer.valueOf(step.getId());
         Timber.d("Current step %s", currentStepIndex);
@@ -80,9 +204,10 @@ public class RecipeActivityViewModel extends AndroidViewModel {
     public void moveToNext() {
         Boolean last = isLastStep.getValue();
         Timber.d("Moving to next, is it last? %s", last);
-        if(isDisplayingIngredients()) {
-            displayedIngredients.setValue(null);
-            currentStepIndex=0;
+        isFirstStep.postValue(false);
+        if (isDisplayingIngredients()) {
+            hideIngredients();
+            currentStepIndex = 0;
             currentStep.postValue(recipeSteps.getValue().get(currentStepIndex));
         } else {
             if (last != null && !last) {
@@ -92,26 +217,22 @@ public class RecipeActivityViewModel extends AndroidViewModel {
         }
     }
 
-    private boolean isDisplayingIngredients() {
-        return displayedIngredients.getValue() != null;
-
-    }
-
     public void moveToPrevious() {
         if (!isFirst()) {
-            if(currentStepIndex==0) {
-                displayedIngredients.setValue(ingredients);
-            } else{
+            if (currentStepIndex == 0) {
+                showIngredients();
+                isFirstStep.postValue(true);
+            } else {
                 currentStepIndex--;
+                isFirstStep.postValue(false);
                 currentStep.postValue(recipeSteps.getValue().get(currentStepIndex));
             }
-
         }
     }
 
     public boolean isFirst() {
 
-       return isDisplayingIngredients() || !hasIngredients() && currentStepIndex == 0;
+        return isDisplayingIngredients() || !hasIngredients() && currentStepIndex == 0;
     }
 
     @NonNull
@@ -121,7 +242,10 @@ public class RecipeActivityViewModel extends AndroidViewModel {
             isLastStep.addSource(getCurrentStep(), new Observer<Step>() {
                 @Override
                 public void onChanged(@Nullable Step step) {
+                    Timber.d("SAVINGSTEP step has changed");
                     if (step == null) return;
+                    Timber.d("SAVINGSTEP step is not null but current is %s, last is %s", currentStepIndex, lastStepIndex);
+
                     if (currentStepIndex == lastStepIndex) {
                         isLastStep.setValue(true);
                     } else {
@@ -134,25 +258,27 @@ public class RecipeActivityViewModel extends AndroidViewModel {
         return isLastStep;
     }
 
-    public LiveData<Recipe> getCurrentRecipe() {
-        if (currentRecipe == null) {
-            currentRecipe = new MediatorLiveData<>();
-            currentRecipe.addSource(currentRecipeId, new Observer<Integer>() {
+    @NonNull
+    public LiveData<Boolean> isFirstStep() {
+        if (isFirstStep == null) {
+            isFirstStep = new MediatorLiveData<>();
+            isFirstStep.addSource(getCurrentStep(), new Observer<Step>() {
                 @Override
-                public void onChanged(@Nullable Integer id) {
-                    if (id != null) {
-                        Recipe recipe = getRecipeById(id);
-                        currentRecipe.postValue(recipe);
-                        recipeSteps.postValue(Arrays.asList(recipe.getSteps()));
-                        ingredients = Arrays.asList(recipe.getIngredients());
-                        lastStepIndex = recipe.steps.length - 1;
+                public void onChanged(@Nullable Step step) {
+                    if (step == null) {
+                        isFirstStep.postValue(isDisplayingIngredients() || !hasIngredients() && currentStepIndex == 0);
+                    } else {
+                        isFirstStep.postValue(false);
                     }
                 }
             });
-
-            Timber.d("Creating new current recipe");
         }
-        Timber.d("Providing current recipe");
+
+        return isFirstStep;
+    }
+
+    public LiveData<Recipe> getCurrentRecipe() {
+
         return currentRecipe;
     }
 
@@ -160,18 +286,15 @@ public class RecipeActivityViewModel extends AndroidViewModel {
         currentRecipeId.postValue(recipeId);
     }
 
-
-    // utility method to determine which id holds the value
-    private Recipe getRecipeById(int id) {
-
-        for (Recipe recipe : recipes) {
-            int idFromString = Integer.valueOf(recipe.getId());
-            if (recipe.uid == id || idFromString == id) {
-                return recipe;
-            }
+    private boolean isDisplayingIngredients() {
+        if (displayIngredients == null) {
+            return false;
+        }
+        if (displayIngredients.getValue() == null) {
+            return false;
         }
 
-        return new Recipe();
+        return displayIngredients.getValue();
     }
 
     private boolean hasIngredients() {
@@ -187,12 +310,75 @@ public class RecipeActivityViewModel extends AndroidViewModel {
 
     }
 
-    public void displayIngredients(List<Ingredient> ingredients) {
-        displayedIngredients.setValue(ingredients);
+    public LiveData<List<Ingredient>> displayIngredients() {
+        return displayedIngredients;
+    }
+
+
+    // saving and restoring state
+    public void restoreState(Bundle savedInstanceState) {
+        Timber.d("restoring state of the ViewModel");
+        int recipeId = savedInstanceState.getInt(EXTRA_RECIPE_ID);
+        setCurrentRecipeId(recipeId);
+        if (savedInstanceState.containsKey(DISPLAY_INGREDIENTS_KEY)) {
+            boolean display = savedInstanceState.getBoolean(DISPLAY_INGREDIENTS_KEY, false);
+            if (display) {
+                showIngredients();
+                if(ingredients!=null) {
+                    Timber.d("Displaying ingredients: %s", ingredients.toString());
+                } else {
+                    Timber.d("Displaying ingredients: which are null");
+                }
+
+            } else {
+                Timber.d("Not displaying ingredients");
+                hideIngredients();
+            }
+        } else {
+            Timber.d("Saved instance does not contain the right key");
+            hideIngredients();
+        }
+
+        if(savedInstanceState.containsKey(CURRENT_STEP_KEY)) {
+            Timber.d("SAVINGSTEP Contains key");
+            int index = savedInstanceState.getInt(CURRENT_STEP_KEY, -1);
+            if(index>-1) {
+                currentStepIndexLiveData.postValue(index);
+                currentStepIndex = index;
+                Timber.d("SAVINGSTEP Posting value %s", index);
+            }
+        }
+
+        if(savedInstanceState.containsKey(CURRENT_TIME_KEY)) {
+            Timber.d("SAVINGPOSITION Contains key");
+            time = savedInstanceState.getLong(CURRENT_TIME_KEY, 0);
+        }
 
     }
 
-    public LiveData<List<Ingredient>> displayIngredients() {
-        return displayedIngredients;
+    public Bundle saveState(Bundle outState) {
+        Timber.d("Saving state by ViewModel");
+        if (isDisplayingIngredients()) {
+            outState.putBoolean(DISPLAY_INGREDIENTS_KEY, true);
+        }
+        if(currentStep!=null && currentStep.getValue()!=null) {
+            outState.putInt(CURRENT_STEP_KEY, currentStepIndex);
+            Timber.d("SAVINGSTEP Saving step index %s,", currentStepIndex);
+        }
+
+        if(time!=0L) {
+            outState.putLong(CURRENT_TIME_KEY, time);
+            Timber.d("SAVINGPOSITION because time is not 0 but %s", time);
+        }
+
+        return outState;
+    }
+
+    public void setCurrentTime(long time) {
+        this.time = time;
+    }
+
+    public long getTime() {
+        return time;
     }
 }

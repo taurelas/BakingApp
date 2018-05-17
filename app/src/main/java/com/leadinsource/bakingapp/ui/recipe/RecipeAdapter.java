@@ -12,8 +12,6 @@ import com.leadinsource.bakingapp.model.Ingredient;
 import com.leadinsource.bakingapp.model.Recipe;
 import com.leadinsource.bakingapp.model.Step;
 
-import timber.log.Timber;
-
 /**
  * Adapter for Step in RecipeActivity
  */
@@ -40,7 +38,6 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     private Callback callback;
 
     RecipeAdapter(Callback callback, Recipe recipe) {
-        Timber.d("Recipe is " + null);
         data = recipe;
         this.callback = callback;
     }
@@ -83,7 +80,7 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         if (data == null || data.getSteps() == null) {
             return 0;
         } else {
-            return data.getSteps().length;
+            return data.getSteps().length+1; // ingredients gives +1
         }
 
     }
