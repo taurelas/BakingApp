@@ -1,5 +1,7 @@
 package com.leadinsource.bakingapp.ui.recipe;
 
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
@@ -13,6 +15,8 @@ import android.widget.TextView;
 import com.leadinsource.bakingapp.R;
 import com.leadinsource.bakingapp.model.Ingredient;
 
+import java.util.List;
+
 import timber.log.Timber;
 
 /**
@@ -22,8 +26,10 @@ import timber.log.Timber;
 public class IngredientsFragment extends Fragment {
 
     static final String EXTRA_INGREDIENTS = "extra_ingredients";
+    private RecipeActivityViewModel viewModel;
 
     Ingredient[] ingredients;
+    private TextView textView;
 
     public IngredientsFragment() {
         //empty constructor
@@ -32,6 +38,8 @@ public class IngredientsFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        viewModel = ViewModelProviders.of(getActivity()).get(RecipeActivityViewModel.class);
 
         if (savedInstanceState==null && getArguments().containsKey(EXTRA_INGREDIENTS)) {
             Parcelable[] parcelables = getArguments().getParcelableArray(EXTRA_INGREDIENTS);
@@ -59,21 +67,30 @@ public class IngredientsFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_ingredients, container, false);
 
-        TextView textView = rootView.findViewById(R.id.tvIngredients);
-        StringBuilder sb = new StringBuilder();
+        textView = rootView.findViewById(R.id.tvIngredients);
 
-        if (ingredients != null) {
-            for(Ingredient ingredient : ingredients) {
-                sb.append(ingredient.getIngredient()).append(" ");
-                sb.append(ingredient.getQuantity()).append(" ");
-                sb.append(ingredient.getMeasure()).append("\n");
+
+        viewModel.displayIngredients().observe(getActivity(), new Observer<List<Ingredient>>() {
+            @Override
+            public void onChanged(@Nullable List<Ingredient> ingredients) {
+                StringBuilder sb = new StringBuilder();
+                if (ingredients != null) {
+                    for(Ingredient ingredient : ingredients) {
+                        sb.append(ingredient.getIngredient()).append(" ");
+                        sb.append(ingredient.getQuantity()).append(" ");
+                        sb.append(ingredient.getMeasure()).append("\n");
+                    }
+
+                    textView.setText(sb.toString());
+                } else {
+                    Timber.d("Ingredients are null");
+                    textView.setText(R.string.no_ingredients);
+                }
             }
+        });
 
-            textView.setText(sb.toString());
-        } else {
-            Timber.d("Ingredients are null");
-            textView.setText(R.string.no_ingredients);
-        }
+
+
 
         return rootView;
     }

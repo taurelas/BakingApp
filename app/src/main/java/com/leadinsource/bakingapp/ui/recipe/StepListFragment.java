@@ -19,8 +19,6 @@ import com.leadinsource.bakingapp.model.Ingredient;
 import com.leadinsource.bakingapp.model.Recipe;
 import com.leadinsource.bakingapp.model.Step;
 
-import java.util.Arrays;
-
 import timber.log.Timber;
 
 /**
@@ -96,7 +94,7 @@ public class StepListFragment extends Fragment implements RecipeAdapter.Callback
     @Override
     public void onClick(Ingredient[] ingredients) {
         Toast.makeText(getContext(), "Clicked ingredients", Toast.LENGTH_SHORT).show();
-        viewModel.displayIngredients(Arrays.asList(ingredients));
+        viewModel.showIngredients();
     }
 
     @Override

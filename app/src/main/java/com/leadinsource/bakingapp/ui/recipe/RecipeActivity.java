@@ -10,7 +10,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Toast;
 
-import com.leadinsource.bakingapp.NavigationFragment;
 import com.leadinsource.bakingapp.R;
 import com.leadinsource.bakingapp.model.Ingredient;
 import com.leadinsource.bakingapp.model.Recipe;
@@ -27,11 +26,12 @@ import timber.log.Timber;
 
 public class RecipeActivity extends AppCompatActivity {
 
-    private static final String EXTRA_RECIPE_ID = "com.leadinsource.bakingapp.ui.recipe.recipe_id";
+    public static final String EXTRA_RECIPE_ID = "com.leadinsource.bakingapp.ui.recipe.recipe_id";
     public static final int INVALID_RECIPE_ID = -1;
     public static final String NAVIGATION_TAG = "com.leadinsource.bakingapp.ui.recipe.navigation_tag";
     public static final String NAVIGATION_KEY = "com.leadinsource.bakingapp.ui.recipe.navigation_key";
     private static final String STEP_KEY = "com.leadinsource.bakingapp.ui.recipe.step_key";
+    private static final String DISPLAY_INGREDIENTS = "display_ingredient_key";
 
     /**
      * indicates whether the screen displays two panes or one
@@ -43,6 +43,7 @@ public class RecipeActivity extends AppCompatActivity {
     private StepDetailFragment stepDetailFragment;
     private int recipeId;
     private NavigationFragment navigationFragment;
+    private RecipeActivityViewModel viewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,16 +51,15 @@ public class RecipeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recipe);
 
-        final RecipeActivityViewModel viewModel = ViewModelProviders.of(this).get(RecipeActivityViewModel.class);
+        viewModel = ViewModelProviders.of(this).get(RecipeActivityViewModel.class);
 
         // restoring fragments if needed, the fields remain null if not restored
         // also restoring recipeId
         if (savedInstanceState != null) {
             //viewModel.restoreState(savedInstanceState);  // this would be ok
-
             Timber.d("Restoring fragments");
 
-            Fragment fragment = getSupportFragmentManager().getFragment(savedInstanceState, STEP_KEY);
+            /*Fragment fragment = getSupportFragmentManager().getFragment(savedInstanceState, STEP_KEY);
             if (fragment instanceof IngredientsFragment) {
                 ingredientsFragment = (IngredientsFragment) fragment;
             } else if (fragment instanceof StepDetailFragment) {
@@ -69,12 +69,16 @@ public class RecipeActivity extends AppCompatActivity {
             fragment = getSupportFragmentManager().getFragment(savedInstanceState, NAVIGATION_KEY);
             if(fragment!=null && fragment instanceof NavigationFragment) {
                 navigationFragment = (NavigationFragment) fragment;
-            }
+            }*/
 
-            Timber.d("Restoring list of recipe steps");
+            // this is the only fragment we are restoring from the original state, the rest is going
+            // to be recreated anew
+
+            Timber.d("Restoring list of recipe steps and the state of recyclerview also");
             stepListFragment = (StepListFragment) getSupportFragmentManager().getFragment(savedInstanceState, "StepList");
 
             recipeId = savedInstanceState.getInt(EXTRA_RECIPE_ID, INVALID_RECIPE_ID);
+            //viewModel.restoreState(savedInstanceState);
 // ----------------- lets try and avoid the top save for viewmodel.restoreState
         } else {
             Timber.d("Creating fresh fragments");
@@ -102,12 +106,13 @@ public class RecipeActivity extends AppCompatActivity {
         View view = findViewById(R.id.step_detail_container);
         twoPanes = (view != null);
 
-        // adding list of steps to a layout
+        // adding list of steps to a layout, this happens ALWAYS
         if (stepListFragment == null) {
             Timber.d("Creating new StepListFragment");
             stepListFragment = new StepListFragment();
         }
 
+        //adding list of steps to the container
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.step_list_container, stepListFragment)
                 .commit();
@@ -123,18 +128,25 @@ public class RecipeActivity extends AppCompatActivity {
             }
         });
 
+        // now the rest reacts to the changes in viewmodel,
+        // if displayingredients holds null, does nothing
+        // but if there is a list, display that list and create navigation if necesssary
+        // created NavigationFragments starts observing viewmodel too
+
         viewModel.displayIngredients().observe(this, new Observer<List<Ingredient>>() {
             @Override
             public void onChanged(@Nullable List<Ingredient> display) {
-                Timber.d("Displaying ingredients: Amount of stuff in the backstack: %s", getSupportFragmentManager().getBackStackEntryCount());
                 if (display != null) {
-                    Timber.d("Displaying ingredients");
+                    Timber.d("Displaying ingredients with size %s", display.size());
                     stepListFragment = null;
                     if (ingredientsFragment == null) {
+                        Timber.d("Creating ingredients fragment");
                         ingredientsFragment = new IngredientsFragment();
                         Bundle bundle = new Bundle();
                         bundle.putParcelableArray(IngredientsFragment.EXTRA_INGREDIENTS, display.toArray(new Ingredient[display.size()]));
                         ingredientsFragment.setArguments(bundle);
+                    } else {
+                        Timber.d("Fragment already exists");
                     }
 
                     // if we have two panes
@@ -161,6 +173,10 @@ public class RecipeActivity extends AppCompatActivity {
                 }
             }
         });
+
+        // if getCurrentSteps holds null, does nothing
+        // but if there is a step, display that stepDetailFragment and create navigation if necesssary
+        // created NavigationFragments starts observing viewmodel too
 
         viewModel.getCurrentStep().observe(this, new Observer<Step>() {
             @Override
@@ -207,15 +223,21 @@ public class RecipeActivity extends AppCompatActivity {
         // here we go, we need to save the state of the activity so the viewmodel can restore it
         outState.putInt(EXTRA_RECIPE_ID, recipeId);
 
+        outState = viewModel.saveState(outState);
+
         // now we add fragments and we want to avoid it
 
-        if (ingredientsFragment == null) {
+        /*if (ingredientsFragment == null) {
             Timber.d("Saving instance state: ingredients is null");
         } else {
             if(ingredientsFragment.isAdded()) {
                 getSupportFragmentManager().putFragment(outState, STEP_KEY, ingredientsFragment);
+                outState.putBoolean(DISPLAY_INGREDIENTS, true);
             }
-        }
+        } */
+
+        // the only fragment we are saving
+
         if (stepListFragment == null) {
             Timber.d("Saving instance state: List is null");
         } else {
@@ -224,7 +246,7 @@ public class RecipeActivity extends AppCompatActivity {
                 getSupportFragmentManager().putFragment(outState, "StepList", stepListFragment);
             }
         }
-
+    /*
         if(navigationFragment == null) {
             Timber.d("Navigation instance state: fragment is null");
         } else {
@@ -241,20 +263,23 @@ public class RecipeActivity extends AppCompatActivity {
             if(stepDetailFragment.isAdded()) {
                 getSupportFragmentManager().putFragment(outState, STEP_KEY, stepDetailFragment);
             }
-        }
+        }*/
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         Timber.d("On restore instance state");
         super.onRestoreInstanceState(savedInstanceState);
-
+        viewModel.restoreState(savedInstanceState);
         // here is slightly different scenario because the state of the activity is different - viewmodel is gone
         // but in reality the only thing different is viewmodel's state, it should not affect the activity
 
-        //viewmodel.restore(savedInstanceState);
 
-        if(ingredientsFragment!=null) {
+
+
+
+
+        /*if(ingredientsFragment!=null) {
             // if we have two panes
             if (twoPanes) {
                 getSupportFragmentManager().beginTransaction()
@@ -292,7 +317,7 @@ public class RecipeActivity extends AppCompatActivity {
 
                 }
             }
-        }
+        }*/
 
     }
 
