@@ -31,6 +31,7 @@ import static com.leadinsource.bakingapp.ui.recipe.RecipeActivity.EXTRA_RECIPE_I
 public class RecipeActivityViewModel extends AndroidViewModel {
     private static final String DISPLAY_INGREDIENTS_KEY = "display_ingredients_key";
     private static final String CURRENT_STEP_KEY = "current_step_key";
+
     private MediatorLiveData<List<Step>> recipeSteps;
     private MediatorLiveData<Boolean> isLastStep;
     private MediatorLiveData<Boolean> isFirstStep;

@@ -36,12 +36,15 @@ import timber.log.Timber;
  */
 public class StepDetailFragment extends Fragment {
 
+    private static final String PLAYER_POSITION_KEY = "player_position_key";
+
     private Step step;
     private SimpleExoPlayer exoPlayer;
     private RecipeActivityViewModel viewModel;
     private TextView textView;
     private SimpleExoPlayerView playerView;
     private ImageView imageView;
+    private long playerPosition = 0L;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -55,11 +58,17 @@ public class StepDetailFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         viewModel = ViewModelProviders.of(getActivity()).get(RecipeActivityViewModel.class);
+        Timber.d("SAVINGPOSITION onCreate in Fragment %s", this);
+        if(savedInstanceState!=null && savedInstanceState.containsKey(PLAYER_POSITION_KEY)) {
+            Timber.d("SAVINGPOSITION savedInstanceState is not null and has a key");
+            playerPosition = savedInstanceState.getLong(PLAYER_POSITION_KEY, 0L);
+        }
     }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        Timber.d("SAVINGPOSITION onCreateView");
         View rootView = inflater.inflate(R.layout.step, container, false);
 
         textView = rootView.findViewById(R.id.step_description);
@@ -76,7 +85,7 @@ public class StepDetailFragment extends Fragment {
                     }
 
                     if(imageView!=null) {
-                        //imageView.setImageDrawable(step.getThumbnailURL()); PICASSO
+                        //imageView.setImageDrawable(step.getThumbnailURL()); TODO PICASSO
                     }
 
                     if(playerView!=null) {
@@ -90,6 +99,8 @@ public class StepDetailFragment extends Fragment {
                             MediaSource mediaSource = new ExtractorMediaSource(videoUrl, new DefaultDataSourceFactory(
                                     getContext(), userAgent), new DefaultExtractorsFactory(), null, null);
                             exoPlayer.prepare(mediaSource);
+                            exoPlayer.seekTo(playerPosition);
+                            Timber.d("SAVINGPOSITION step changed: Seeking to %s", playerPosition);
                             exoPlayer.setPlayWhenReady(true);
                         } else {
                             playerView.setVisibility(View.GONE);
@@ -108,13 +119,14 @@ public class StepDetailFragment extends Fragment {
 
     @Override
     public void onPause() {
+        Timber.d("SAVINGPOSITION onPause player position is %s", playerPosition);
         super.onPause();
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        Timber.d("On Stop");
+        Timber.d("SAVINGPOSITION On Stop");
         if (exoPlayer != null) {
             exoPlayer.setPlayWhenReady(false);
             exoPlayer.stop();
@@ -122,5 +134,29 @@ public class StepDetailFragment extends Fragment {
             exoPlayer = null;
         }
 
+    }
+
+    @Override
+    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        long position;
+
+        if(exoPlayer!=null) {
+            position = exoPlayer.getCurrentPosition();
+            outState.putLong("player_position_key", position);
+            Timber.d("SAVINGPOSITION %s goes to bundle", position);
+        }
+
+    }
+
+    @Override
+    public void onResume() {
+        Timber.d("SAVINGPOSITION onResume player position is %s", playerPosition);
+        super.onResume();
     }
 }
