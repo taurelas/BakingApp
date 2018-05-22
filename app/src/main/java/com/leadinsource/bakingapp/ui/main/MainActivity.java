@@ -44,7 +44,7 @@ public class MainActivity extends AppCompatActivity implements MainListAdapter.C
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Timber.d("App start");
+        Timber.d("App start xoxo");
         MainActivityViewModel viewModel = ViewModelProviders.of(this).get(MainActivityViewModel.class);
 
         recyclerView = findViewById(R.id.recyclerView);

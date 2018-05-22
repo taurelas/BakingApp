@@ -109,10 +109,10 @@ public class RecipeActivity extends AppCompatActivity {
             }
         });
 
-        // now the rest reacts to the changes in viewmodel,
-        // if displayingredients holds null, does nothing
-        // but if there is a list, display that list and create navigation if necesssary
-        // created NavigationFragments starts observing viewmodel too
+        // now the rest reacts to the changes in viewModel,
+        // if displayIngredients holds null, does nothing
+        // but if there is a list, display that list and create navigation if necessary
+        // created NavigationFragments starts observing viewModel too
 
         viewModel.displayIngredients().observe(this, new Observer<List<Ingredient>>() {
             @Override
@@ -148,37 +148,32 @@ public class RecipeActivity extends AppCompatActivity {
         });
 
         // if getCurrentSteps holds null, does nothing
-        // but if there is a step, display that stepDetailFragment and create navigation if necesssary
-        // created NavigationFragments starts observing viewmodel too
+        // but if there is a step, display that stepDetailFragment and create navigation if necessary
+        // created NavigationFragments starts observing viewModel too
 
         viewModel.getCurrentStep().observe(this, new Observer<Step>() {
             @Override
             public void onChanged(@Nullable Step step) {
-                Timber.d("ROTATION New step detected");
                 if (step != null) {
-                    Timber.d("ROTATION The step is not null");
                     stepListFragment = null;
                     //stepDetailFragment = (StepDetailFragment) getSupportFragmentManager().findFragmentByTag(STEP_TAG);
                     if (stepDetailFragment != null) {
-                        Timber.d("ROTATION StepDetailFragment is not null");
                     } else {
-                        Timber.d("ROTATION Creating new stepDetailFragment");
                         stepDetailFragment = new StepDetailFragment();
                     }
 
 
                      /* With two panes, we want step details inside a container but we don't want it
-                        in the backstack.
+                        in the back stack.
 
                         With one pane, we want step details inside a container but we do want it in
-                        the backstack since it covers the whole screen.
-                        With one pane, we also need navigation which should not affect the backstack */
+                        the back stack since it covers the whole screen.
+                        With one pane, we also need navigation which should not affect the back stack */
                     if (twoPanes) {
                         getSupportFragmentManager().beginTransaction()
                                 .replace(R.id.step_detail_container, stepDetailFragment, STEP_TAG)
                                 .commit();
                     } else {
-                        Timber.d("StepdetailFragment id: %s", stepDetailFragment.getId());
 
                         getSupportFragmentManager().beginTransaction()
                                 .remove(stepDetailFragment)
@@ -207,7 +202,7 @@ public class RecipeActivity extends AppCompatActivity {
     protected void onSaveInstanceState(Bundle outState) {
         Timber.d("On save instance state by activity");
         super.onSaveInstanceState(outState);
-        // here we go, we need to save the state of the activity so the viewmodel can restore it
+        // here we go, we need to save the state of the activity so the viewModel can restore it
         outState.putInt(EXTRA_RECIPE_ID, recipeId);
 
         outState = viewModel.saveState(outState);
