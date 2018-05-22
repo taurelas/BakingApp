@@ -27,6 +27,7 @@ import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
 import com.leadinsource.bakingapp.R;
 import com.leadinsource.bakingapp.model.Step;
+import com.squareup.picasso.Picasso;
 
 import timber.log.Timber;
 
@@ -83,7 +84,9 @@ public class StepDetailFragment extends Fragment {
                     }
 
                     if (imageView != null) {
-                        //imageView.setImageDrawable(step.getThumbnailURL()); TODO PICASSO
+                        if(step.getThumbnailURL()!=null && step.getThumbnailURL().length()>0 && getContext()!=null) {
+                            Picasso.get().load(step.getThumbnailURL()).into(imageView);
+                        }
                     }
 
                     if (playerView != null) {
