@@ -137,8 +137,10 @@ public class StepDetailFragment extends Fragment {
     public void onPause() {
         Timber.d("ROTATION onPause");
         super.onPause();
-        playerPosition = exoPlayer.getCurrentPosition();
-        releasePlayer();
+        if (exoPlayer!=null) {
+            playerPosition = exoPlayer.getCurrentPosition();
+            releasePlayer();
+        }
     }
 
     @Override

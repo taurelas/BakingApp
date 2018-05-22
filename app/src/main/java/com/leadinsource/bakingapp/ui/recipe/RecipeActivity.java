@@ -178,18 +178,17 @@ public class RecipeActivity extends AppCompatActivity {
                                 .replace(R.id.step_detail_container, stepDetailFragment, STEP_TAG)
                                 .commit();
                     } else {
-                        if(!restoring) {
-                            Timber.d("ROTATION2: replacing detailFragment, restoring false");
-                            restoring = false;
-                            getSupportFragmentManager().beginTransaction()
-                                    .replace(R.id.step_list_container, stepDetailFragment)
-                                    .commit();
-                        } else {
-                            Timber.d("ROTATION2: replacing detailFragment, restoring true");
-                            getSupportFragmentManager().beginTransaction()
-                                    .replace(R.id.step_list_container, stepDetailFragment)
-                                    .commit();
-                        }
+                        Timber.d("StepdetailFragment id: %s", stepDetailFragment.getId());
+
+                        getSupportFragmentManager().beginTransaction()
+                                .remove(stepDetailFragment)
+                                .commit();
+                        getSupportFragmentManager().executePendingTransactions();
+
+                        getSupportFragmentManager().beginTransaction()
+                                .add(R.id.step_list_container, stepDetailFragment)
+                                .commit();
+                        getSupportFragmentManager().executePendingTransactions();
 
                         if (navigationFragment == null) {
                             navigationFragment = new NavigationFragment();
