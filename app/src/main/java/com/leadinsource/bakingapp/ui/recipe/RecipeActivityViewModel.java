@@ -189,11 +189,11 @@ public class RecipeActivityViewModel extends AndroidViewModel {
     }
 
     public void setCurrentStep(Step step) {
-        Timber.d("Setting current step %s", step);
+        Timber.d("ROTATION Setting current step %s", step);
         hideIngredients();
         currentStep.postValue(step);
         currentStepIndex = Integer.valueOf(step.getId());
-        Timber.d("Current step %s", currentStepIndex);
+        Timber.d("ROTATION Current step %s", currentStepIndex);
 
     }
 
@@ -204,6 +204,7 @@ public class RecipeActivityViewModel extends AndroidViewModel {
     public void moveToNext() {
         Boolean last = isLastStep.getValue();
         Timber.d("Moving to next, is it last? %s", last);
+        resetTime();
         isFirstStep.postValue(false);
         if (isDisplayingIngredients()) {
             hideIngredients();
@@ -218,6 +219,7 @@ public class RecipeActivityViewModel extends AndroidViewModel {
     }
 
     public void moveToPrevious() {
+        resetTime();
         if (!isFirst()) {
             if (currentStepIndex == 0) {
                 showIngredients();
@@ -350,8 +352,9 @@ public class RecipeActivityViewModel extends AndroidViewModel {
         }
 
         if(savedInstanceState.containsKey(CURRENT_TIME_KEY)) {
-            Timber.d("SAVINGPOSITION Contains key");
+
             time = savedInstanceState.getLong(CURRENT_TIME_KEY, 0);
+            Timber.d("SAVINGPOSITION Restored time position to %s", time);
         }
 
     }
@@ -376,6 +379,11 @@ public class RecipeActivityViewModel extends AndroidViewModel {
 
     public void setCurrentTime(long time) {
         this.time = time;
+    }
+
+    public void resetTime() {
+        Timber.d("Resetting time");
+        this.time = 0L;
     }
 
     public long getTime() {

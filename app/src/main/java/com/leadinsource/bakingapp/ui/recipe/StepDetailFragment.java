@@ -41,7 +41,7 @@ public class StepDetailFragment extends Fragment {
     private TextView textView;
     private SimpleExoPlayerView playerView;
     private ImageView imageView;
-    private long playerPosition = 0L;
+    private long playerPosition;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -54,9 +54,11 @@ public class StepDetailFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Timber.d("onCreate of StepDetailFragment %s", this);
+        Timber.d("ROTATION onCreate of StepDetailFragment %s", this);
         viewModel = ViewModelProviders.of(getActivity()).get(RecipeActivityViewModel.class);
         playerPosition = viewModel.getTime();
+
+        Timber.d("ROTATION Got position %s from viewmodel", playerPosition);
     }
 
     @Override
@@ -89,8 +91,15 @@ public class StepDetailFragment extends Fragment {
                             initializePlayer(step);
                         } else {
                             playerView.setVisibility(View.GONE);
-                            Timber.d("Setting visibility to gone");
+                            Timber.d("Setting player's visibility to gone");
+                            releasePlayer();
+                            // we used to reset time here but now we do it when we press next
+                           // viewModel.resetTime();
+
                         }
+                    } else {
+                        Timber.d("PlayerView is null so releasing the player");
+                        releasePlayer();
                     }
 
                 } else {
@@ -103,6 +112,8 @@ public class StepDetailFragment extends Fragment {
     }
 
     private void initializePlayer(Step step) {
+        releasePlayer();
+        playerView.setVisibility(View.VISIBLE);
         Timber.d("initialize player, position is %s", playerPosition);
         TrackSelector trackSelector = new DefaultTrackSelector();
         LoadControl loadControl = new DefaultLoadControl();
@@ -113,31 +124,42 @@ public class StepDetailFragment extends Fragment {
         MediaSource mediaSource = new ExtractorMediaSource(videoUrl, new DefaultDataSourceFactory(
                 getContext(), userAgent), new DefaultExtractorsFactory(), null, null);
         exoPlayer.prepare(mediaSource);
-        exoPlayer.seekTo(viewModel.getTime());
-        // back to default time
-        viewModel.setCurrentTime(0L);
+        exoPlayer.seekTo(playerPosition);
+        Timber.d("%s: ROTATION Seeking to %s", this, viewModel.getTime());
         exoPlayer.setPlayWhenReady(true);
+
     }
 
     @Override
     public void onPause() {
+        Timber.d("ROTATION onPause");
         super.onPause();
-        if(exoPlayer!=null) {
-            playerPosition = exoPlayer.getCurrentPosition();
-        }
+        playerPosition = exoPlayer.getCurrentPosition();
         releasePlayer();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        if(recentStep!=null && exoPlayer==null) {
+        if (recentStep != null && exoPlayer == null) {
             initializePlayer(recentStep);
         }
+
     }
 
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        // saving playerPosition
+        Timber.d("ROTATION Saving player position: %s", playerPosition);
+        viewModel.setCurrentTime(playerPosition);
+    }
+
+    /**
+     * Necessary steps for release of the player
+     */
     private void releasePlayer() {
-        Timber.d("Releasing the player");
+        Timber.d("ROTATION Releasing the player");
         if (exoPlayer != null) {
             exoPlayer.setPlayWhenReady(false);
             exoPlayer.stop();
@@ -146,11 +168,4 @@ public class StepDetailFragment extends Fragment {
         }
     }
 
-    @Override
-    public void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-        // saving playerPosition
-        Timber.d("Saving player position: %s", playerPosition);
-        viewModel.setCurrentTime(playerPosition);
-    }
 }
