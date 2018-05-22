@@ -96,7 +96,7 @@ public class Recipe implements Parcelable {
     @Override
     public String toString()
     {
-        return "ClassPojo [ingredients = "+ingredients+", id = "+id+", servings = "+servings+", name = "+name+", image = "+image+", steps = "+steps+"]";
+        return "ClassPOJO [ingredients = "+ingredients+", id = "+id+", servings = "+servings+", name = "+name+", image = "+image+", steps = "+steps+"]";
     }
 
     @Override

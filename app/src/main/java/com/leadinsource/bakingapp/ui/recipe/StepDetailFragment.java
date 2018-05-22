@@ -55,17 +55,13 @@ public class StepDetailFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Timber.d("ROTATION onCreate of StepDetailFragment %s", this);
         viewModel = ViewModelProviders.of(getActivity()).get(RecipeActivityViewModel.class);
         playerPosition = viewModel.getTime();
-
-        Timber.d("ROTATION Got position %s from viewmodel", playerPosition);
     }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        Timber.d("ROTATION onCreateView");
         View rootView = inflater.inflate(R.layout.step, container, false);
 
         textView = rootView.findViewById(R.id.step_description);
@@ -75,7 +71,6 @@ public class StepDetailFragment extends Fragment {
         viewModel.getCurrentStep().observe(getActivity(), new Observer<Step>() {
             @Override
             public void onChanged(@Nullable Step step) {
-                Timber.d("Step changed");
                 recentStep = step;
                 if (step != null) {
 
@@ -84,7 +79,7 @@ public class StepDetailFragment extends Fragment {
                     }
 
                     if (imageView != null) {
-                        if(step.getThumbnailURL()!=null && step.getThumbnailURL().length()>0 && getContext()!=null) {
+                        if (step.getThumbnailURL() != null && step.getThumbnailURL().length() > 0 && getContext() != null) {
                             Picasso.get().load(step.getThumbnailURL()).into(imageView);
                         }
                     }
@@ -94,19 +89,12 @@ public class StepDetailFragment extends Fragment {
                             initializePlayer(step);
                         } else {
                             playerView.setVisibility(View.GONE);
-                            Timber.d("Setting player's visibility to gone");
                             releasePlayer();
-                            // we used to reset time here but now we do it when we press next
-                           // viewModel.resetTime();
-
                         }
                     } else {
-                        Timber.d("PlayerView is null so releasing the player");
                         releasePlayer();
                     }
 
-                } else {
-                    Timber.d("Step is null");
                 }
             }
         });
@@ -117,7 +105,6 @@ public class StepDetailFragment extends Fragment {
     private void initializePlayer(Step step) {
         releasePlayer();
         playerView.setVisibility(View.VISIBLE);
-        Timber.d("initialize player, position is %s", playerPosition);
         TrackSelector trackSelector = new DefaultTrackSelector();
         LoadControl loadControl = new DefaultLoadControl();
         exoPlayer = ExoPlayerFactory.newSimpleInstance(getContext(), trackSelector, loadControl);
@@ -128,16 +115,13 @@ public class StepDetailFragment extends Fragment {
                 getContext(), userAgent), new DefaultExtractorsFactory(), null, null);
         exoPlayer.prepare(mediaSource);
         exoPlayer.seekTo(playerPosition);
-        Timber.d("%s: ROTATION Seeking to %s", this, viewModel.getTime());
         exoPlayer.setPlayWhenReady(true);
-
     }
 
     @Override
     public void onPause() {
-        Timber.d("ROTATION onPause");
         super.onPause();
-        if (exoPlayer!=null) {
+        if (exoPlayer != null) {
             playerPosition = exoPlayer.getCurrentPosition();
             releasePlayer();
         }
@@ -156,15 +140,13 @@ public class StepDetailFragment extends Fragment {
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         // saving playerPosition
-        Timber.d("ROTATION Saving player position: %s", playerPosition);
         viewModel.setCurrentTime(playerPosition);
     }
 
     /**
-     * Necessary steps for release of the player
+     * Necessary steps for the release of the player
      */
     private void releasePlayer() {
-        Timber.d("ROTATION Releasing the player");
         if (exoPlayer != null) {
             exoPlayer.setPlayWhenReady(false);
             exoPlayer.stop();

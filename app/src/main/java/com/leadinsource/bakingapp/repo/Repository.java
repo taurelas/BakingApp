@@ -53,7 +53,6 @@ public class Repository {
     }
 
     private void initDb(Context context) {
-        Timber.d("Initing db in Repo");
         db = Room.databaseBuilder(context, AppDatabase.class, "data").build();
         recipeDao = db.recipeDao();
         setIdle(false);
@@ -61,18 +60,14 @@ public class Repository {
     }
 
     public LiveData<List<Recipe>> getRecipes() {
-        Timber.d("Getting recipes");
         if(recipes==null) {
-            Timber.d("Recipes are null");
             recipes = new MediatorLiveData<>();
             recipes.addSource(recipesWithData, new Observer<List<RecipeWithData>>() {
                 @Override
                 public void onChanged(@Nullable List<RecipeWithData> recipesWithData) {
                     if(recipesWithData==null || recipesWithData.size()==0) {
-                        Timber.d("Getting data from internet");
                         fetchRecipes();
                     } else {
-                        Timber.d("Got data from db");
                         ArrayList<Recipe> recipesList = new ArrayList<>();
 
                         for (RecipeWithData recipeWithData : recipesWithData) {

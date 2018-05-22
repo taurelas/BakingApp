@@ -44,7 +44,7 @@ public class IngredientsWidgetConfigureActivity extends Activity implements Main
 
         setContentView(R.layout.ingredients_widget_configure);
 
-        // setting up recyclerview with recipes
+        // setting up recyclerView with recipes
         Cursor cursor = getContentResolver().query(DataContract.Recipe.CONTENT_URI, null,null,null,null);
         List<Recipe> data = DbUtil.getRecipesFromCursor(cursor);
         RecyclerView recyclerView = findViewById(R.id.rv_candidates);

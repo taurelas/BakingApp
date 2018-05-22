@@ -83,7 +83,7 @@ public class Step implements Parcelable {
     @Override
     public String toString()
     {
-        return "ClassPojo [id = "+id+", shortDescription = "+shortDescription+", description = "+description+", videoURL = "+videoURL+", thumbnailURL = "+thumbnailURL+"]";
+        return "ClassPOJO [id = "+id+", shortDescription = "+shortDescription+", description = "+description+", videoURL = "+videoURL+", thumbnailURL = "+thumbnailURL+"]";
     }
 
     @Override

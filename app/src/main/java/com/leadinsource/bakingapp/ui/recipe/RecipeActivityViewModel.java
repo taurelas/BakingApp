@@ -244,9 +244,7 @@ public class RecipeActivityViewModel extends AndroidViewModel {
             isLastStep.addSource(getCurrentStep(), new Observer<Step>() {
                 @Override
                 public void onChanged(@Nullable Step step) {
-                    Timber.d("SAVINGSTEP step has changed");
                     if (step == null) return;
-                    Timber.d("SAVINGSTEP step is not null but current is %s, last is %s", currentStepIndex, lastStepIndex);
 
                     if (currentStepIndex == lastStepIndex) {
                         isLastStep.setValue(true);
@@ -333,45 +331,36 @@ public class RecipeActivityViewModel extends AndroidViewModel {
                 }
 
             } else {
-                Timber.d("Not displaying ingredients");
                 hideIngredients();
             }
         } else {
-            Timber.d("Saved instance does not contain the right key");
             hideIngredients();
         }
 
         if(savedInstanceState.containsKey(CURRENT_STEP_KEY)) {
-            Timber.d("SAVINGSTEP Contains key");
             int index = savedInstanceState.getInt(CURRENT_STEP_KEY, -1);
             if(index>-1) {
                 currentStepIndexLiveData.postValue(index);
                 currentStepIndex = index;
-                Timber.d("SAVINGSTEP Posting value %s", index);
             }
         }
 
         if(savedInstanceState.containsKey(CURRENT_TIME_KEY)) {
-
             time = savedInstanceState.getLong(CURRENT_TIME_KEY, 0);
-            Timber.d("SAVINGPOSITION Restored time position to %s", time);
         }
 
     }
 
     public Bundle saveState(Bundle outState) {
-        Timber.d("Saving state by ViewModel");
         if (isDisplayingIngredients()) {
             outState.putBoolean(DISPLAY_INGREDIENTS_KEY, true);
         }
         if(currentStep!=null && currentStep.getValue()!=null) {
             outState.putInt(CURRENT_STEP_KEY, currentStepIndex);
-            Timber.d("SAVINGSTEP Saving step index %s,", currentStepIndex);
         }
 
         if(time!=0L) {
             outState.putLong(CURRENT_TIME_KEY, time);
-            Timber.d("SAVINGPOSITION because time is not 0 but %s", time);
         }
 
         return outState;
@@ -382,7 +371,6 @@ public class RecipeActivityViewModel extends AndroidViewModel {
     }
 
     public void resetTime() {
-        Timber.d("Resetting time");
         this.time = 0L;
     }
 

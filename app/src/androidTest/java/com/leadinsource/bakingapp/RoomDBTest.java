@@ -39,7 +39,7 @@ public class RoomDBTest {
 
     @Test
     public void insertRecipeAndReadIt() throws Exception {
-        Recipe recipe = TestUtil.createRecipe("Nutella piechart");
+        Recipe recipe = TestUtil.createRecipe("Nutella pie chart");
 
         TestUtil.insertRecipe(recipeDao, recipe);
 
