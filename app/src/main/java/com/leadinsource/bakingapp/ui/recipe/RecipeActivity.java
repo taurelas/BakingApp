@@ -44,6 +44,7 @@ public class RecipeActivity extends AppCompatActivity {
     private int recipeId;
     private NavigationFragment navigationFragment;
     private RecipeActivityViewModel viewModel;
+    private boolean restoring;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,17 +56,23 @@ public class RecipeActivity extends AppCompatActivity {
             // restoring list fragment and its state
             stepListFragment = (StepListFragment) getSupportFragmentManager().getFragment(savedInstanceState, STEP_LIST_KEY);
             recipeId = savedInstanceState.getInt(EXTRA_RECIPE_ID, INVALID_RECIPE_ID);
+            stepDetailFragment = (StepDetailFragment) getSupportFragmentManager().getFragment(savedInstanceState, STEP_DETAIL_KEY);
+            restoring = true;
         } else {
+            Timber.d("ROTATION SavedInstanceState is null");
+            restoring = false;
+            viewModel.resetTime();
             Intent intent = getIntent();
             // finish if no intent, the activity without is useless
             if (intent == null) {
                 Toast.makeText(this, "Not sure what your intention is here", Toast.LENGTH_SHORT).show();
                 finish();
+            } else {
+                // getting recipeId from intent
+                recipeId = intent.getIntExtra(ListRemoteViewsFactory.EXTRA_RECIPE_ID, -1);
             }
 
-            assert intent != null;
-            // getting recipeId from intent
-            recipeId = intent.getIntExtra(ListRemoteViewsFactory.EXTRA_RECIPE_ID, -1);
+
         }
 
         //  finish if invalid recipeId
@@ -82,7 +89,7 @@ public class RecipeActivity extends AppCompatActivity {
 
         // adding list of steps to a layout, this happens ALWAYS
         if (stepListFragment == null) {
-            Timber.d("Creating new StepListFragment");
+            Timber.d("ROTATION Creating new StepListFragment");
             stepListFragment = new StepListFragment();
         }
 
@@ -96,7 +103,7 @@ public class RecipeActivity extends AppCompatActivity {
             @Override
             public void onChanged(@Nullable Recipe recipe) {
                 if (recipe != null) {
-                    Timber.d("Recipe changed");
+                    Timber.d("ROTATION Recipe changed so setting tht title");
                     setTitle(recipe.getName());
                 }
             }
@@ -151,9 +158,9 @@ public class RecipeActivity extends AppCompatActivity {
                 if (step != null) {
                     Timber.d("ROTATION The step is not null");
                     stepListFragment = null;
-                    stepDetailFragment = (StepDetailFragment) getSupportFragmentManager().findFragmentByTag(STEP_TAG);
-                    if(stepDetailFragment!=null) {
-                        Timber.d("ROTATION well well well, there was something existing");
+                    //stepDetailFragment = (StepDetailFragment) getSupportFragmentManager().findFragmentByTag(STEP_TAG);
+                    if (stepDetailFragment != null) {
+                        Timber.d("ROTATION StepDetailFragment is not null");
                     } else {
                         Timber.d("ROTATION Creating new stepDetailFragment");
                         stepDetailFragment = new StepDetailFragment();
@@ -171,9 +178,18 @@ public class RecipeActivity extends AppCompatActivity {
                                 .replace(R.id.step_detail_container, stepDetailFragment, STEP_TAG)
                                 .commit();
                     } else {
+                        Timber.d("StepdetailFragment id: %s", stepDetailFragment.getId());
+
                         getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.step_list_container, stepDetailFragment)
+                                .remove(stepDetailFragment)
                                 .commit();
+                        getSupportFragmentManager().executePendingTransactions();
+
+                        getSupportFragmentManager().beginTransaction()
+                                .add(R.id.step_list_container, stepDetailFragment)
+                                .commit();
+                        getSupportFragmentManager().executePendingTransactions();
+
                         if (navigationFragment == null) {
                             navigationFragment = new NavigationFragment();
                             getSupportFragmentManager().beginTransaction()
