@@ -16,4 +16,6 @@
     <string name="ingredients">Ingredients</string>
     <string name="ingredients_label">Ingredients:</string>
     <string name="no_ingredients">No ingredients</string>
+    <string name="unknown_recipe">Unknown recipe</string>
+    <string name="intent_null_message">Not sure what your intention is here</string>
 </resources>
