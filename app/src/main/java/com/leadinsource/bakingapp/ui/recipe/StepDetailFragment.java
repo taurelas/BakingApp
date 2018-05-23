@@ -42,6 +42,7 @@ public class StepDetailFragment extends Fragment {
     private SimpleExoPlayerView playerView;
     private ImageView imageView;
     private long playerPosition;
+    private boolean isPlaying;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -58,6 +59,7 @@ public class StepDetailFragment extends Fragment {
         super.onCreate(savedInstanceState);
         viewModel = ViewModelProviders.of(getActivity()).get(RecipeActivityViewModel.class);
         playerPosition = viewModel.getTime();
+        isPlaying = viewModel.getPlayingStatus();
     }
 
     @Override
@@ -116,7 +118,7 @@ public class StepDetailFragment extends Fragment {
                 getContext(), userAgent), new DefaultExtractorsFactory(), null, null);
         exoPlayer.prepare(mediaSource);
         exoPlayer.seekTo(playerPosition);
-        exoPlayer.setPlayWhenReady(true);
+        exoPlayer.setPlayWhenReady(isPlaying);
     }
 
     @Override
@@ -124,6 +126,7 @@ public class StepDetailFragment extends Fragment {
         super.onPause();
         if (exoPlayer != null) {
             playerPosition = exoPlayer.getCurrentPosition();
+            isPlaying = exoPlayer.getPlayWhenReady();
             releasePlayer();
         }
     }
@@ -142,6 +145,7 @@ public class StepDetailFragment extends Fragment {
         super.onSaveInstanceState(outState);
         // saving playerPosition
         viewModel.setCurrentTime(playerPosition);
+        viewModel.setPlayingStatus(isPlaying);
     }
 
     /**

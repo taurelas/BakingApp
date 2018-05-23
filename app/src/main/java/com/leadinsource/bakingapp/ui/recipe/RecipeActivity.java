@@ -62,6 +62,7 @@ public class RecipeActivity extends AppCompatActivity {
             Timber.d("ROTATION SavedInstanceState is null");
             restoring = false;
             viewModel.resetTime();
+            viewModel.resetPlayingStatus();
             Intent intent = getIntent();
             // finish if no intent, the activity without is useless
             if (intent == null) {
@@ -157,8 +158,7 @@ public class RecipeActivity extends AppCompatActivity {
                 if (step != null) {
                     stepListFragment = null;
                     //stepDetailFragment = (StepDetailFragment) getSupportFragmentManager().findFragmentByTag(STEP_TAG);
-                    if (stepDetailFragment != null) {
-                    } else {
+                    if (stepDetailFragment == null) {
                         stepDetailFragment = new StepDetailFragment();
                     }
 
