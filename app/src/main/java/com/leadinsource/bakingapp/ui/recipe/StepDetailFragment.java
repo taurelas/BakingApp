@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,8 +30,6 @@ import com.leadinsource.bakingapp.R;
 import com.leadinsource.bakingapp.model.Step;
 import com.squareup.picasso.Picasso;
 
-import timber.log.Timber;
-
 /**
  * A fragment representing a single Step detail screen.
  */
@@ -43,6 +42,7 @@ public class StepDetailFragment extends Fragment {
     private SimpleExoPlayerView playerView;
     private ImageView imageView;
     private long playerPosition;
+    private boolean isPlaying;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -52,11 +52,14 @@ public class StepDetailFragment extends Fragment {
 
     }
 
+
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         viewModel = ViewModelProviders.of(getActivity()).get(RecipeActivityViewModel.class);
         playerPosition = viewModel.getTime();
+        isPlaying = viewModel.getPlayingStatus();
     }
 
     @Override
@@ -79,13 +82,13 @@ public class StepDetailFragment extends Fragment {
                     }
 
                     if (imageView != null) {
-                        if (step.getThumbnailURL() != null && step.getThumbnailURL().length() > 0 && getContext() != null) {
+                        if (!TextUtils.isEmpty(step.getThumbnailURL()) && getContext() != null) {
                             Picasso.get().load(step.getThumbnailURL()).into(imageView);
                         }
                     }
 
                     if (playerView != null) {
-                        if (step.getVideoURL() != null && step.getVideoURL().length() > 0 && getContext() != null) {
+                        if (!TextUtils.isEmpty(step.getVideoURL()) && getContext() != null) {
                             initializePlayer(step);
                         } else {
                             playerView.setVisibility(View.GONE);
@@ -115,7 +118,7 @@ public class StepDetailFragment extends Fragment {
                 getContext(), userAgent), new DefaultExtractorsFactory(), null, null);
         exoPlayer.prepare(mediaSource);
         exoPlayer.seekTo(playerPosition);
-        exoPlayer.setPlayWhenReady(true);
+        exoPlayer.setPlayWhenReady(isPlaying);
     }
 
     @Override
@@ -123,6 +126,7 @@ public class StepDetailFragment extends Fragment {
         super.onPause();
         if (exoPlayer != null) {
             playerPosition = exoPlayer.getCurrentPosition();
+            isPlaying = exoPlayer.getPlayWhenReady();
             releasePlayer();
         }
     }
@@ -141,6 +145,7 @@ public class StepDetailFragment extends Fragment {
         super.onSaveInstanceState(outState);
         // saving playerPosition
         viewModel.setCurrentTime(playerPosition);
+        viewModel.setPlayingStatus(isPlaying);
     }
 
     /**

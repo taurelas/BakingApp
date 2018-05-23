@@ -5,8 +5,8 @@
     android:id="@+id/recyclerView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginLeft="16dp"
-    android:layout_marginRight="16dp"
+    android:layout_marginLeft="@dimen/main_rv_h_margin"
+    android:layout_marginRight="@dimen/main_rv_h_margin"
 
     app:layoutManager="LinearLayoutManager"
     tools:context="com.leadinsource.bakingapp.ui.main.MainActivity"

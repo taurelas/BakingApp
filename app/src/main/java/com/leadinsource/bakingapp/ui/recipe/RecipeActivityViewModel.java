@@ -32,10 +32,12 @@ public class RecipeActivityViewModel extends AndroidViewModel {
     private static final String DISPLAY_INGREDIENTS_KEY = "display_ingredients_key";
     private static final String CURRENT_STEP_KEY = "current_step_key";
     private static final String CURRENT_TIME_KEY = "current_time_key";
+    private static final String IS_PLAYING_KEY = "is_playing_key";
 
     private MediatorLiveData<List<Step>> recipeSteps;
     private MediatorLiveData<Boolean> isLastStep;
     private long time = 0;
+    private boolean isPlaying = true;
     private MediatorLiveData<Boolean> isFirstStep;
     private MediatorLiveData<Recipe> currentRecipe = new MediatorLiveData<>();
     private MediatorLiveData<Step> currentStep = new MediatorLiveData<>();
@@ -121,6 +123,7 @@ public class RecipeActivityViewModel extends AndroidViewModel {
                     Timber.d("List of recipes has changed");
                     Recipe recipe = getRecipeById(currentRecipeId.getValue(), recipes);
                     currentRecipe.postValue(recipe);
+                    Timber.d("Recipe steps: %s, recipe: %s", recipeSteps, recipe);
                     recipeSteps.postValue(Arrays.asList(recipe.getSteps()));
                     lastStepIndex = recipe.steps.length - 1;
                 }
@@ -184,7 +187,7 @@ public class RecipeActivityViewModel extends AndroidViewModel {
         displayIngredients.postValue(true);
     }
 
-    public void hideIngredients() {
+    private void hideIngredients() {
         displayIngredients.postValue(false);
     }
 
@@ -205,6 +208,7 @@ public class RecipeActivityViewModel extends AndroidViewModel {
         Boolean last = isLastStep.getValue();
         Timber.d("Moving to next, is it last? %s", last);
         resetTime();
+        resetPlayingStatus();
         isFirstStep.postValue(false);
         if (isDisplayingIngredients()) {
             hideIngredients();
@@ -220,6 +224,7 @@ public class RecipeActivityViewModel extends AndroidViewModel {
 
     public void moveToPrevious() {
         resetTime();
+        resetPlayingStatus();
         if (!isFirst()) {
             if (currentStepIndex == 0) {
                 showIngredients();
@@ -232,7 +237,7 @@ public class RecipeActivityViewModel extends AndroidViewModel {
         }
     }
 
-    public boolean isFirst() {
+    private boolean isFirst() {
 
         return isDisplayingIngredients() || !hasIngredients() && currentStepIndex == 0;
     }
@@ -349,6 +354,10 @@ public class RecipeActivityViewModel extends AndroidViewModel {
             time = savedInstanceState.getLong(CURRENT_TIME_KEY, 0);
         }
 
+        if(savedInstanceState.containsKey(IS_PLAYING_KEY)) {
+            isPlaying = savedInstanceState.getBoolean(IS_PLAYING_KEY, true);
+        }
+
     }
 
     public Bundle saveState(Bundle outState) {
@@ -361,6 +370,10 @@ public class RecipeActivityViewModel extends AndroidViewModel {
 
         if(time!=0L) {
             outState.putLong(CURRENT_TIME_KEY, time);
+        }
+
+        if(!isPlaying) {
+            outState.putBoolean(IS_PLAYING_KEY, false);
         }
 
         return outState;
@@ -376,5 +389,17 @@ public class RecipeActivityViewModel extends AndroidViewModel {
 
     public long getTime() {
         return time;
+    }
+
+    public void setPlayingStatus(boolean isPlaying) {
+        this.isPlaying = isPlaying;
+    }
+
+    public boolean getPlayingStatus() {
+        return isPlaying;
+    }
+
+    public void resetPlayingStatus() {
+        isPlaying = true;
     }
 }

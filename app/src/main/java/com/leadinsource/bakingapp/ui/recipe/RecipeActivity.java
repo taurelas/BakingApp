@@ -5,10 +5,10 @@ import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.widget.Toast;
 
 import com.leadinsource.bakingapp.R;
 import com.leadinsource.bakingapp.model.Ingredient;
@@ -59,13 +59,13 @@ public class RecipeActivity extends AppCompatActivity {
             stepDetailFragment = (StepDetailFragment) getSupportFragmentManager().getFragment(savedInstanceState, STEP_DETAIL_KEY);
             restoring = true;
         } else {
-            Timber.d("ROTATION SavedInstanceState is null");
             restoring = false;
             viewModel.resetTime();
+            viewModel.resetPlayingStatus();
             Intent intent = getIntent();
             // finish if no intent, the activity without is useless
             if (intent == null) {
-                Toast.makeText(this, "Not sure what your intention is here", Toast.LENGTH_SHORT).show();
+                Snackbar.make(findViewById(android.R.id.content), R.string.intent_null_message, Snackbar.LENGTH_SHORT).show();
                 finish();
             } else {
                 // getting recipeId from intent
@@ -77,7 +77,7 @@ public class RecipeActivity extends AppCompatActivity {
 
         //  finish if invalid recipeId
         if (recipeId <= INVALID_RECIPE_ID) {
-            Toast.makeText(this, "Unknown recipe", Toast.LENGTH_SHORT).show();
+            Snackbar.make(findViewById(android.R.id.content), R.string.unknown_recipe, Snackbar.LENGTH_SHORT).show();
             finish();
         }
 
@@ -89,7 +89,6 @@ public class RecipeActivity extends AppCompatActivity {
 
         // adding list of steps to a layout, this happens ALWAYS
         if (stepListFragment == null) {
-            Timber.d("ROTATION Creating new StepListFragment");
             stepListFragment = new StepListFragment();
         }
 
@@ -103,7 +102,6 @@ public class RecipeActivity extends AppCompatActivity {
             @Override
             public void onChanged(@Nullable Recipe recipe) {
                 if (recipe != null) {
-                    Timber.d("ROTATION Recipe changed so setting tht title");
                     setTitle(recipe.getName());
                 }
             }
@@ -157,8 +155,7 @@ public class RecipeActivity extends AppCompatActivity {
                 if (step != null) {
                     stepListFragment = null;
                     //stepDetailFragment = (StepDetailFragment) getSupportFragmentManager().findFragmentByTag(STEP_TAG);
-                    if (stepDetailFragment != null) {
-                    } else {
+                    if (stepDetailFragment == null) {
                         stepDetailFragment = new StepDetailFragment();
                     }
 
