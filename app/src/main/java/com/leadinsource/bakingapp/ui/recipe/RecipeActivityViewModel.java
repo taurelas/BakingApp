@@ -123,6 +123,7 @@ public class RecipeActivityViewModel extends AndroidViewModel {
                     Timber.d("List of recipes has changed");
                     Recipe recipe = getRecipeById(currentRecipeId.getValue(), recipes);
                     currentRecipe.postValue(recipe);
+                    Timber.d("Recipe steps: %s, recipe: %s", recipeSteps, recipe);
                     recipeSteps.postValue(Arrays.asList(recipe.getSteps()));
                     lastStepIndex = recipe.steps.length - 1;
                 }
