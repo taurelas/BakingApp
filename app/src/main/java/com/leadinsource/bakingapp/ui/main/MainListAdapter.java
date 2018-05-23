@@ -2,6 +2,7 @@ package com.leadinsource.bakingapp.ui.main;
 
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,7 +44,9 @@ public class MainListAdapter extends RecyclerView.Adapter<MainListAdapter.ViewHo
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         holder.tvRecipeName.setText(data.get(position).getName());
-        Picasso.get().load(data.get(position).getImage()).into(holder.ivThumbnail);
+        if(!TextUtils.isEmpty(data.get(position).getImage())) {
+            Picasso.get().load(data.get(position).getImage()).into(holder.ivThumbnail);
+        }
     }
 
     @Override
