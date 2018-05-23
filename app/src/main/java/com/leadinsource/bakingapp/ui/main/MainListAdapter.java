@@ -5,10 +5,12 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.leadinsource.bakingapp.R;
 import com.leadinsource.bakingapp.model.Recipe;
+import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
@@ -35,13 +37,13 @@ public class MainListAdapter extends RecyclerView.Adapter<MainListAdapter.ViewHo
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.main_list_item, parent, false);
 
-
         return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         holder.tvRecipeName.setText(data.get(position).getName());
+        Picasso.get().load(data.get(position).getImage()).into(holder.ivThumbnail);
     }
 
     @Override
@@ -57,10 +59,12 @@ public class MainListAdapter extends RecyclerView.Adapter<MainListAdapter.ViewHo
     class ViewHolder extends RecyclerView.ViewHolder {
 
         TextView tvRecipeName;
+        ImageView ivThumbnail;
 
         ViewHolder(View itemView) {
             super(itemView);
             tvRecipeName = itemView.findViewById(R.id.tvRecipeName);
+            ivThumbnail = itemView.findViewById(R.id.ivThumbnail);
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
